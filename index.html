@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport">
+    <title>Diana Ow</title>
+    <meta name="author" content="Diana Ow">
+    <meta name="description" content="Diana Ow's website">
+    <meta name="keywords" content="data, visualization, visualisation, data visualization, data visualisation, information, information visualization, information visualisation, dataviz, datavis, infoviz, infovis, collaboration, data art">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Poppins" rel="stylesheet" crossorigin="anonymous">
+    <link href="./css/global.css" rel="stylesheet">
+    <style>
+    .wrapper {
+      width: 100vw;
+      height: 100vw;
+      min-width: 1000px;
+      min-height: 1000px;
+    }
+    .header {
+      width:100vw;
+      height:220px;
+    }
+    .navbar, .navbar-nav {
+      background: none;
+      align-items: center;
+      text-align: center;
+      padding:22px;
+    }
+    .svg-container {
+      display: inline-block;
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%; /* aspect ratio */
+      vertical-align: top;
+      overflow: hidden;
+    }
+    .svg-content-responsive {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+    }
+    .item {
+      stroke: none;
+    }
+    .textSVG {
+      display: block;
+      margin: 0 auto;
+      position: absolute;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      width: 100vw;
+      min-width: 1000px;
+      height: 35vh;
+      margin-left:150px;
+    } 
+    .box-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center
+    }
+    .box-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 0px;
+    }
+    .group {
+      width: 100%;
+      height: 25%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      justify-content: center;
+      align-items: center;
+    }
+    .group-1 {
+      width: 80%;
+      height: 25%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+    .box {
+      box-sizing: border-box;
+      border: 2px solid white;
+      flex-basis:40%;
+      height:100%;
+      display:flex;
+      justify-content: center;
+      align-items: center;
+      cursor:default; 
+      background-color: white;   
+    }
+    .box > h2 {
+      font-family: 'Karla', sans-serif;
+      text-align:center;
+    }
+    .box > p.left{
+      font-family: 'Karla', sans-serif;
+      text-align:left;
+      align-self: flex-start;
+      padding: 10px;
+    }
+    .box > p.right{
+      font-family: 'Karla', sans-serif;
+      text-align:right;
+      align-self: flex-end;
+    }
+    img {
+      width: 100%;
+      min-width: 200px;
+    }
+    /* if mobile device max width 420px */
+    @media only screen and (max-device-width: 420px) {
+      .header {
+        width:100vw;
+        height:220px;
+      }
+      .textSVG {
+        margin-left:120px;
+        width: 100vw;
+        height: 15vh;
+      } 
+      .wrapper {
+        margin-top: 160px;
+        margin-left: 80px;
+      }
+      .box-group {
+        width: 98%;
+        height: 98%;
+      }
+      a {
+        font-size: 1.6em;
+      }
+    } 
+
+    @media only screen 
+    and (min-device-width : 421px) 
+    and (max-device-width : 1024px)  {
+      .header {
+        width:100vw;
+        height:180px;
+      }
+      .textSVG {
+        margin-left:90px;
+        width: 100vw;
+        height: 15vh;
+      } 
+      .wrapper {
+        margin-top: 60px;
+        margin-left: 60px;
+      }
+      .box-group {
+        width: 98%;
+        height: 98%;
+      }
+    }
+    @media only screen 
+    and (min-device-width : 1600px) {
+      .header {
+        width:100vw;
+        height:230px;
+      }
+      .textSVG {
+        margin-left:120px;
+        width: 100vw;
+        height: 30vh;
+      }  
+    }
+  .box {
+    box-sizing: border-box;
+    border: 5px solid #fff;
+    width:100%;
+    height:100%;
+    float:left;
+    overflow:hidden;
+    position:relative;
+    text-align:center;
+    cursor:default;    
+  }
+  .box .overlay {
+    width:100%;
+    height:100%;
+    position:absolute;
+    overflow:hidden;
+    top:0;
+    left:0;
+    opacity:0;
+    background-color:rgba(0,0,0,0.7);
+    -webkit-transition:all .4s ease-in-out;
+    transition:all .4s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .box img {
+    display:block;
+    position:relative;
+    -webkit-transition:all .4s linear;
+    transition:all .4s linear;
+  }
+  img {
+    width: 100%;
+  }
+  .box h1 {
+    color:#fff;
+    text-align:center; 
+    font-size:24px;  
+    -webkit-transform:translatey(-100px);
+    -ms-transform:translatey(-100px);
+    transform:translatey(-100px);
+    -webkit-transition:all .2s ease-in-out;
+    transition:all .2s ease-in-out;  
+    padding: 0;
+    align-self: center; 
+  }
+  .box h2 {
+    width: 70%;
+    color:#fff;
+    text-align:center;
+    font-size:15px;
+    position:relative;
+    -webkit-transform:translatey(-100px);
+    -ms-transform:translatey(-100px);
+    transform:translatey(-100px);
+    -webkit-transition:all .2s ease-in-out;
+    transition:all .2s ease-in-out;
+    padding:0px;
+    align-self: center;
+  }
+  .box a.info {
+    flex: initial;
+    width: 20%;
+    align-self: center;
+    text-decoration:none;
+    display:inline-block;
+    text-transform:uppercase;
+    color:white;
+    font-size:12px;
+    border:1px solid #fff;
+    background-color:transparent;
+    opacity:0;
+    filter:alpha(opacity=0);
+    -webkit-transition:all .2s ease-in-out;
+    transition:all .2s ease-in-out;
+    margin:20px 0 0;
+    padding:5px 10px;
+  }
+    .box:hover .overlay {
+      opacity:1;
+      filter:alpha(opacity=100);
+    }
+    .box:hover h1, .box:hover h2,.box:hover a.info {
+      opacity:1;
+      filter:alpha(opacity=100);
+      -ms-transform:translatey(0);
+      -webkit-transform:translatey(0);
+      transform:translatey(0);
+    }
+    .box:hover a.info {
+    -webkit-transition-delay:.2s;
+    transition-delay:.2s;
+    }
+    </style>
+
+  </head>
+
+  <body>
+    <div class='wrapper'>
+    <div class='header'>
+      <svg class="textSVG" width="100vw" height="10vh" viewBox="0 0 1014 310">
+        <g id="svgGroup" stroke-linecap="round" fill-rule="evenodd" stroke="#000" stroke-width="0.25mm" fill="none" style="stroke:#000000;fill:none">
+            <path d="M 565.75 120.251 L 565.75 201.251 L 523 201.251 L 523 125.251 A 42.762 42.762 0 0 0 522.138 116.396 Q 520.972 110.886 518.226 106.688 A 24.272 24.272 0 0 0 515.625 103.376 A 24.474 24.474 0 0 0 500.422 95.778 A 34.228 34.228 0 0 0 496 95.501 Q 483 95.501 475.375 103.751 A 26.845 26.845 0 0 0 469.453 114.399 Q 468.202 118.544 467.87 123.532 A 55.969 55.969 0 0 0 467.75 127.251 L 467.75 201.251 L 425 201.251 L 425 61.751 L 467.75 61.751 L 467.75 87.251 Q 473.75 74.751 485.625 67.501 A 49.257 49.257 0 0 1 504.768 60.833 A 63.644 63.644 0 0 1 513.5 60.251 A 58.066 58.066 0 0 1 530.586 62.644 A 45.282 45.282 0 0 1 551.625 76.251 A 53.472 53.472 0 0 1 562.949 97.693 Q 565.203 105.812 565.643 115.471 A 105 105 0 0 1 565.75 120.251 Z M 66.75 201.251 L 0 201.251 L 0 24.501 L 66.75 24.501 A 124.538 124.538 0 0 1 90.204 26.607 A 91.495 91.495 0 0 1 116 35.501 Q 136.75 46.501 147.875 66.501 A 88.186 88.186 0 0 1 158.215 99.112 A 111.343 111.343 0 0 1 159 112.501 A 103.508 103.508 0 0 1 155.86 138.468 A 85.875 85.875 0 0 1 147.875 158.626 Q 136.75 178.751 115.875 190.001 Q 95 201.251 66.75 201.251 Z M 353 87.001 L 353 61.751 L 395.5 61.751 L 395.5 201.251 L 353 201.251 L 353 176.001 Q 347.5 188.501 336 195.751 A 46.345 46.345 0 0 1 318.968 202.144 A 61.562 61.562 0 0 1 308.5 203.001 A 58.925 58.925 0 0 1 287.901 199.467 A 54.525 54.525 0 0 1 277.625 194.376 Q 264 185.751 256.125 169.501 Q 248.25 153.251 248.25 131.501 A 103.801 103.801 0 0 1 249.757 113.376 A 75.289 75.289 0 0 1 256.125 93.376 A 64.602 64.602 0 0 1 266.286 78.171 A 55.009 55.009 0 0 1 277.625 68.626 A 55.987 55.987 0 0 1 306.225 60.039 A 67.598 67.598 0 0 1 308.5 60.001 A 59.164 59.164 0 0 1 322.076 61.49 A 45.394 45.394 0 0 1 336 67.251 Q 347.5 74.501 353 87.001 Z M 691.5 87.001 L 691.5 61.751 L 734 61.751 L 734 201.251 L 691.5 201.251 L 691.5 176.001 Q 686 188.501 674.5 195.751 A 46.345 46.345 0 0 1 657.468 202.144 A 61.562 61.562 0 0 1 647 203.001 A 58.925 58.925 0 0 1 626.401 199.467 A 54.525 54.525 0 0 1 616.125 194.376 Q 602.5 185.751 594.625 169.501 Q 586.75 153.251 586.75 131.501 A 103.801 103.801 0 0 1 588.257 113.376 A 75.289 75.289 0 0 1 594.625 93.376 A 64.602 64.602 0 0 1 604.786 78.171 A 55.009 55.009 0 0 1 616.125 68.626 A 55.987 55.987 0 0 1 644.725 60.039 A 67.598 67.598 0 0 1 647 60.001 A 59.164 59.164 0 0 1 660.576 61.49 A 45.394 45.394 0 0 1 674.5 67.251 Q 686 74.501 691.5 87.001 Z M 183.25 61.751 L 226 61.751 L 226 201.251 L 183.25 201.251 L 183.25 61.751 Z M 63 62.001 L 42.75 62.001 L 42.75 163.001 L 63 163.001 A 75.873 75.873 0 0 0 78.541 161.506 Q 88.194 159.485 95.553 154.734 A 42.532 42.532 0 0 0 101.875 149.751 A 43.204 43.204 0 0 0 113.958 128.363 Q 115.75 121.126 115.75 112.501 Q 115.75 90.47 104.058 77.497 A 41.808 41.808 0 0 0 101.875 75.251 A 45.554 45.554 0 0 0 82.114 64.359 Q 75.153 62.443 66.885 62.084 A 89.51 89.51 0 0 0 63 62.001 Z M 322.25 97.501 A 34.035 34.035 0 0 0 312.056 98.958 A 27.081 27.081 0 0 0 300.125 106.501 Q 292.419 114.783 291.803 128.991 A 58.029 58.029 0 0 0 291.75 131.501 A 49.172 49.172 0 0 0 292.728 141.621 Q 294.613 150.577 300.125 156.501 A 27.792 27.792 0 0 0 318.084 165.281 A 38.461 38.461 0 0 0 322.25 165.501 A 32.137 32.137 0 0 0 333.307 163.667 A 28.136 28.136 0 0 0 344.375 156.251 A 31.198 31.198 0 0 0 351.981 141.419 A 45.716 45.716 0 0 0 353 131.501 A 46.411 46.411 0 0 0 351.91 121.141 Q 350.185 113.603 345.729 108.164 A 28.893 28.893 0 0 0 344.375 106.626 Q 335.75 97.501 322.25 97.501 Z M 660.75 97.501 A 34.035 34.035 0 0 0 650.556 98.958 A 27.081 27.081 0 0 0 638.625 106.501 Q 630.919 114.783 630.303 128.991 A 58.029 58.029 0 0 0 630.25 131.501 A 49.172 49.172 0 0 0 631.228 141.621 Q 633.113 150.577 638.625 156.501 A 27.792 27.792 0 0 0 656.584 165.281 A 38.461 38.461 0 0 0 660.75 165.501 A 32.137 32.137 0 0 0 671.807 163.667 A 28.136 28.136 0 0 0 682.875 156.251 A 31.198 31.198 0 0 0 690.481 141.419 A 45.716 45.716 0 0 0 691.5 131.501 A 46.411 46.411 0 0 0 690.41 121.141 Q 688.685 113.603 684.229 108.164 A 28.893 28.893 0 0 0 682.875 106.626 Q 674.25 97.501 660.75 97.501 Z M 179.25 22.501 Q 179.25 12.751 186.25 6.376 A 23.856 23.856 0 0 1 197.668 0.691 A 34.528 34.528 0 0 1 204.75 0.001 A 33.721 33.721 0 0 1 212.742 0.898 A 23.615 23.615 0 0 1 223.25 6.376 A 20.726 20.726 0 0 1 230.229 21.445 A 26.415 26.415 0 0 1 230.25 22.501 A 21.052 21.052 0 0 1 227.973 32.321 A 21.624 21.624 0 0 1 223.25 38.376 A 23.856 23.856 0 0 1 211.832 44.061 A 34.528 34.528 0 0 1 204.75 44.751 A 33.721 33.721 0 0 1 196.758 43.855 A 23.615 23.615 0 0 1 186.25 38.376 A 20.5 20.5 0 0 1 179.271 23.531 A 25.114 25.114 0 0 1 179.25 22.501 Z" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+      <div id="navbarResponsive">
+        <h2 style='padding:0px;margin:0px'>Data Visualization | Web Development</h2>
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">PROJECTS</a>
+          </li>
+          <li class="nav-item">
+            <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com/projects/generativeart/">GENERATIVE ART</a>
+          </li>
+          <li class="nav-item">
+            <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com/blog/">BLOG</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class='box-wrapper'>
+      <div class='box-group'>
+        <br/>
+        
+        <h3>Dashboards</h3>   
+        <div class='group'>      
+          <div class='box'>
+            <img src='images/biovitals-demo.jpeg'>
+            <a href="https://www.biofourmis.com/care-delivery" target="_blank">
+              <div class="overlay">
+              <h1>Data viz library for a healthcare tech company</h1>
+              <h3>D3.js</h3>
+              <h2>Developed and maintained Biofourmis' data visualization library, introducing advanced chart types and enhanced interactive features befitting of high dimensional medical data.</h2>
+              </br>
+              <h2>Collaborated closely with engineering teams to seamlessly integrate the visualization library into various platforms, ensuring web responsiveness and optimal performance.</h2>
+            </div>
+            </a>
+          </div>
+          <div class='box'>
+            <img src='blog/fifa19/fifa19_binned.png'>
+            <a href="http://fifa19-viz.s3-website-ap-southeast-1.amazonaws.com" target="_blank">
+              <div class="overlay">
+                <h1>FIFA 19</h1>
+                <h3>React + D3.js</h3>
+                <h2>Detailed attributes for all players registered in football simulation video game 'FIFA 19'</h2>
+              </div>
+            </a>
+          </div>
+        </div>
+        </br>
+        <div class='group'>      
+          <div class='box'>
+            <img src='images/svelte_dashboard.png'>
+            <a href="https://sveltekit-dashboard.netlify.app/" target="_blank">
+              <div class="overlay">
+                <h1>Interactive dashboard for Web3 gaming company</h1>
+                <h3>Sveltekit + D3.js</h3>
+                <h2>Data is filterable by date and region. As the line chart is zoomed out, the x-axis domain becomes less granular, transitioning from 10-minute intervals to 1-week intervals, while asynchronously extracting new data from an API.</h2>
+              </div>
+            </a>
+          </div>
+          <div class='box'>
+            <img src='blog/health_timeline/health_timeline_mockup_simple.png'>
+            <a href="https://dianaow.com/blog/health_timeline/" target="_blank">
+              <div class="overlay">
+                <h1>Web-based tool for monitoring clinical data</h1>
+                <h3>D3.js</h3>
+                <h2>Worked together with a subject matter expert to bring his visual design of a dashboard to life, creating an interactive timeline visualization of high dimensional clinical data.</h2>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <br/>
+        <br/>
+
+        <h3>Network Visualizations</h3> 
+        <div class='group'>      
+          <div class='box'>
+            <img src='images/vizforsocialgood-network.png'>
+            <a href="https://vizforsocialgood-network.herokuapp.com/" target="_blank">
+              <div class="overlay">
+                <h1>Network of Viz For Social Good contributers</h1>
+                <h3>AntV's G6</h3>
+                <h2>Helping Viz For Social Good (@VizFSG) visualise tracked volunteer contributions to all projects since 2017 with a network.</h2>
+              </div>
+            </a>
+          </div>
+          <div class='box'>
+            <img src='images/covid_network.png'>
+            <a href="http://covid19-singapore.s3-website-ap-southeast-1.amazonaws.com/" target="_blank">
+              <div class="overlay">
+                <h1>COVID-19 Network Singapore</h1>
+                <h3>React + D3</h3>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <br/>
+        <br/>
+
+        <h3>Geospatial</h3>  
+        <div class='group'>
+          <div class='box'>
+            <img src='images/leaflet_dash_map.png' loading="lazy">
+            <a href="" target="_blank">
+              <div class="overlay">
+                <h1>Interactive geospatial dashboard</h1>
+                <h3>Leaflet + Dash</h3>
+                <h2>Developed a geospatial app for a US-based technology company to visualise fibre broadband installation sites in the US, giving client a bird-eye's view of biz operations, while able to investigate specific locations.</h2>
+              </div>
+            </a>
+          </div>
+          <div class='box'>
+            <img src='images/kiron_full.png' loading="lazy">
+              <a href="https://dianameow.com/vizforsocialgood/" target="_blank">
+                <div class="overlay">
+                  <h1>Kiron</h1>
+                  <h3>D3.js + GeoJSON</h3>
+                  <h2>#vizforsocialgood</h2>
+                </div>
+              </a>
+          </div>
+        </div>
+
+        <br/>
+        <br/>
+  
+        <div style="width: 50%; margin-top: 30px;"> 
+          <div style="border-width: 2px; border-color: black; border-style: solid; padding: 20px;">
+          <h2>Testimonials from my clients</h2>      
+          <h3 style="font-family: Karla;">
+            "Diana was excellent to work with! In addition to creating a great looking visualization of my data, she was able to build off and integrate with my current codebase. Will definitively use again in the future for interactive data application. She was also well organized on scope and deliverables and finished the final product very quickly once work began."
+          </h3>
+          <br/>
+          <br/>
+          <h3 style="font-family: Karla;">
+            "Diana did an awesome job on taking our visualizations of Twitter activity to the next level. Not only she was able to quickly interpret and implement the features we were needing, but she also went ahead to proactively implement aesthetical improvements and code optimizations that made the visualization much more fluid and appealing. All of this was performed within budget and schedule and with a lot of attention to detail"
+          </h3>  
+        </div>  
+        </div>
+       
+        <br/>
+        <br/>
+
+        <h3>The unusual</h3>   
+        <div class='group'>      
+          <div class='box'>
+            <img src='images/d3-force-collection-demo.gif' loading="lazy">
+            <a href="https://d3-force-collection.netlify.com" target="_blank">
+              <div class="overlay">
+                <h1>d3-force compilation</h1>
+                <h2>A compilation of d3-force simulations: their use cases and the creation methods behind them.</h2>
+              </div>
+            </a>
+          </div>
+          <div class='box'>
+            <img src='images/data-visualizers.gif' loading="lazy">
+            <a href="https://data-visualizers.netlify.app/" target="_blank">
+              <div class="overlay">
+                <h1>Data Visualization Society members in 2020</h1>
+                <h3>PixiJS</h3>
+                <h2>The Data Visualization Society released their 2020 survey results and I participated in visualizing the results, choosing to represent all respondents as animating and interactive dots on the screen. I wanted audiences to be able to find out how represented they are in the data viz community based on their skillset.</h2>
+                <h2> I allowed audiences to explore by funneling the technology/tool selection with dropdowns, hoping to create a unique data experience with the particle animation.</h2>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <br/>
+        <br/>
+        <h3>Visualizations about Singapore</h3>
+        <!-- Slideshow container -->
+            <div class="slideshow-container">
+
+              <!-- Full-width images with number and caption text -->
+              <div class="mySlides fade">
+                <div class='group-1'>
+                  <div class='box'>
+                    <img src='images/sgp_ethnicity.png' loading="lazy">
+                    <a href="http://singapore-stories.s3-website-ap-southeast-1.amazonaws.com/ethnicity/" target="_blank">
+                      <div class="overlay">
+                        <h1>Singapore Ethnic Diversity</h1>
+                        <h3>D3.js</h3>
+                      </div>
+                    </a>
+                  </div>  
+                  <div class='box'>
+                    <img src='images/hdb_new.png' loading="lazy">
+                    <a href="http://singapore-stories.s3-website-ap-southeast-1.amazonaws.com/map_hdb/" target="_blank">
+                      <div class="overlay">
+                        <h1>Mapping Housing Development Board properties</h1>
+                        <h3>Mapbox</h3>
+                      </div>
+                    </a>
+                  </div>
+                  <div class='box'>
+                    <img src='images/travel_volume1.png' loading="lazy">
+                    <a href="https://dianameow.com/busroutes/travel_volume1.html" target="_blank">
+                      <div class="overlay">
+                        <h1>Singapore Bus Ridership</h1>
+                        <h3>D3.js</h3>
+                      </div>
+                    </a>   
+                  </div>
+                </div>
+              </div>
+
+              <div class="mySlides fade">
+                <div class='group-1'>
+                  <div class='box'>
+                    <img src='images/homelessness.png' loading="lazy">
+                    <a href="http://singapore-stories.s3-website-ap-southeast-1.amazonaws.com/homeless/" target="_blank">
+                      <div class="overlay">
+                        <h1>Homelessness in Singapore</h1>
+                        <h3>D3.js + GeoJSON</h3>
+                      </div>
+                    </a>
+                  </div>  
+                  <div class='box'>
+                    <img src='images/women_in_parliament.png' loading="lazy">
+                    <a href="https://drive.google.com/file/d/1iwYSLbo9jQY3xzxzWm39KeDT8OUf8UyH/view?usp=sharing" target="_blank">
+                      <div class="overlay">
+                        <h1>Women in Singapore's 14th Parliament</h1>
+                        <h3>RAW Graphs + Figma</h3>
+                      </div>
+                    </a>
+                  </div>
+                  <div class='box'>
+                    <img src='images/flubber-demo.gif' loading="lazy">
+                    <a href="http://singapore-stories.s3-website-ap-southeast-1.amazonaws.com/parliament/index2.html" target="_blank">
+                      <div class="overlay">
+                        <h1>Singapore's changing boundaries of Constituency Wards</h1>
+                        <h3>D3.js + GeoJSON</h3>
+                      </div>
+                    </a>   
+                  </div>
+                </div>
+              </div>
+
+              <!-- Next and previous buttons -->
+              <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+              <a class="next" onclick="plusSlides(1)">&#10095;</a>
+            </div>
+            <br>
+
+            <!-- The dots/circles -->
+            <div style="text-align:center">
+              <span class="dot" onclick="currentSlide(1)"></span>
+              <span class="dot" onclick="currentSlide(2)"></span>
+            </div>
+
+        <br/>
+        <br/>
+
+        <footer>
+          <div class="flex-container">
+            <div class="left"><h1 class="name">Thanks for visiting!</h1> 
+              <div class="column-content">
+                <p style="font-weight: 400; font-size: 1.2rem;">Diana Ow</p> 
+              </div>
+            </div> 
+            <div class="right">
+              <div class="column">
+                <h5 class="column-header">Connect</h5> 
+                <div class="column-content connect">
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/dianaow/">LinkedIn</a> 
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="https://github.com/dianaow/">GitHub</a> 
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/follow?screen_name=notforcasual">Twitter</a>
+                </div>
+              </div> 
+              <div class="column">
+                <h5 class="column-header">Contact</h5> 
+                <div class="column-content contact">
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="mailto:diana.ow@outlook.com">Personal</a> 
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="https://calendly.com/dianaow/meeting">Meet</a>
+                </div>
+              </div>
+            </div>
+        </div>
+      </footer>
+
+    </div>
+
+    <script>
+      let slideIndex = 1;
+      showSlides(slideIndex);
+
+      // Next/previous controls
+      function plusSlides(n) {
+        showSlides(slideIndex += n);
+      }
+
+      // Thumbnail image controls
+      function currentSlide(n) {
+        showSlides(slideIndex = n);
+      }
+
+      function showSlides(n) {
+        let i;
+        let slides = document.getElementsByClassName("mySlides");
+        let dots = document.getElementsByClassName("dot");
+        if (n > slides.length) {slideIndex = 1}
+        if (n < 1) {slideIndex = slides.length}
+        for (i = 0; i < slides.length; i++) {
+          slides[i].style.display = "none";
+        }
+        for (i = 0; i < dots.length; i++) {
+          dots[i].className = dots[i].className.replace(" active", "");
+        }
+        slides[slideIndex-1].style.display = "flex";
+        dots[slideIndex-1].className += " active";
+      }
+    </script>
+  </body>
+
+</html>
