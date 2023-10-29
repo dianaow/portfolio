@@ -289,7 +289,7 @@
         <div class='box'>
           <div class="box-content">
             <p>One of the core features and benefits of D3.js is the ability to bind data to elements in the Document Object Model (DOM). With PIXI.js, to make up for the lack of this feature, we can create these <span class="code-keyword">WeakMap</span> objects to externally establish a mapping between various data elements and their corresponding PIXI graphical representations.</p> 
-            <p><span class="text-bold">nodeDataToNodeGfx</span> maps data elements to their graphical representations, and <span class="text-bold">nodeGfxToNodeData</span> maps graphical elements back to their corresponding data.This bidirectional mapping allows you to easily update the visual attributes of nodes based on changes in the data and vice versa.</p>
+            <p><span class="text-bold">nodeDataToNodeGfx</span> maps data elements to their graphical representations, and <span class="text-bold">nodeGfxToNodeData</span> maps graphical elements back to their corresponding data.This bidirectional mapping allows us to easily update the visual attributes of nodes based on changes in the data and vice versa.</p>
             <p>This tecnnique was introduced by <a href="https://zakjan.cz/">Jan Žák</a>. I came across it 3 years ago in this <a href="https://observablehq.com/@zakjan/force-directed-graph-pixi">observable notebook</a> he created.</p>
             <pre>
               <code class="javascript atom-one-dark">
@@ -306,16 +306,16 @@
 
         <div class='box'>
           <h2>Creating the graph elements, starting with nodes and their labels</h2> 
-          <p>I will compare rendering with D3.js and with PIXI.js. There are alternative methods with PIXI.js to create the graphical elements, but I feel the one I describe in the sections below should be the default way since it is the most performant and scalable.</p>
+          <p>I will compare rendering with D3.js and with PIXI.js. There are alternative methods with PIXI.js to create and render the elements, but I feel the one I describe in the sections below should be the default way since it is the most performant and scalable.</p>
           <br>
 
           <p class="text-bold">Performance Tip: Minimize the Number of PIXI Graphics Object     <span><a href="https://pixijs.com/guides/production/performance-tips">Guide on PIXI.js website</a></span></p>
-          <p>When rendering a large dataset in PIXI.js, it's crucial to optimize performance. Instead of creating individual PIXI Graphics objects for each data point, consider converting the graphic into a texture. By using textures within PIXI Sprites, you can significantly enhance rendering speed and efficiency.</p>
-          <p>Qhat happens if the nodes are of various sizes? Set a fixed size to the graphic object, then make use of the width and height property of a PIXI Sprite to scale accordingly.</p>
+          <p>While PIXI.js is fast, when rendering a large dataset in PIXI.js, it's crucial to optimize performance. Instead of creating individual PIXI Graphics objects for each data point, consider converting the graphic into a texture. By using textures within PIXI Sprites, you can significantly enhance rendering speed and efficiency.</p>
+          <p>What happens if the nodes are of various sizes? Set a fixed size to the graphic object, then make use of the width and height property of a PIXI Sprite to scale accordingly.</p>
           <br>
 
           <p class="text-bold">Scalable as an updateable graph</p>
-          <p>Best practice dictates anticipating the potential for a dynamic graph, where the graph's data may require future updates. To ensure maintainability, it's advisable to encapsulate all code that needs to be re-executed upon updates, such as updating graph elements, within a dedicated function, which I name here as <span class='code-keyword'>update</p>
+          <p>Best practice dictates anticipating the potential for a dynamic graph, where the graph's data may require future updates. To ensure maintainability, it's advisable to encapsulate all code that needs to be re-executed upon updates, such as redrawing graph elements, within a dedicated function, which I name here as <span class='code-keyword'>update</p>
           <pre>
             <code>
     const circleGraphics = new PIXI.Graphics();
@@ -757,19 +757,22 @@
         <div class='box'>
           <h3>Choosing to render a static or dynamic graph</h3>
           <div class="box-content-1">
-            <div class="box-content-inner">
+            <div class="box-content-inner" style="padding: 20px;">
               <div>
-                <p class="partition-title">Dymamic</p>
+                <p class="partition-title">Dynamic</p>
                 <p>The "tick" event is triggered at regular intervals during the simulation's animation loop. <span class='text-bold'>At each "tick," the simulation updates the positions and velocities of the nodes based on the forces applied to them.</span></p>
+                <br>
                 <p>Because the starting positions of graph elements are undefined, when you begin a simulation, all nodes are essentially placed at the same starting point, usually at coordinates (0,0) on the screen. The close proximity of nodes at the origin causes them to collide with each other as soon as the simulation begins. Nodes exert forces on each other. As nodes experience these forces, they appear to "jump around" or jitter on the screen, attempting to find equilibrium. This jittering is a result of the dynamic nature of the simulation, where forces like repulsion and attraction cause nodes to continually adjust their positions.</p>
                 <p>Eventually, nodes gradually settle into their final positions, but depending on the <span class="code-keyword">alphaTarget</span> value, the speed at which it reaches an equilibrium varies.</p>
               </div>
             </div>
-            <div class="box-content-inner">
+            <div class="box-content-inner" style="padding: 20px;">
               <div>
                 <p class="partition-title">Static</p>
-                <p>Run <span class="code-keyword">updatePositions</span> function once only.</p>
+                <p class="text-bold">Run <span class="code-keyword">updatePositions</span> function once only.</p>
                 <p>I strongly favor this approach because the initial erratic movement of nodes serves little purpose. This not only detracts from the visual experience but can also introduce animation lag in the case of large-scale graphs. <span class='text-bold'>To refresh and realign element positions, reheat the simulation whenever the update function is triggered.</span></p>   
+                <br>
+                <br>
                 <code>Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay()));</code>
                 <p>This line of code determines the number of iterations needed for a D3.js force simulation to reach or approach its minimum alpha value. This calculation takes into account the minimum alpha value, the alpha decay rate, and the cooling process of the simulation. The result of this calculation is then passed as an argument to the tick method to advance the simulation by that number of iterations. This is often used to ensure that the simulation runs long enough to stabilize the layout of the graph.</p>
               </div>
