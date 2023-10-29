@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" ccontent="width=device-width, initial-scale=1">
+    <meta name="description" content="Diana Ow's portfolio article">
+    <meta name="author" content="Diana Ow">
+    <meta name="keywords" content="pixijs, pixi.js, d3.js, d3, graph, force-directed graph, graph visualization, graph analysis, network, network visualization, data visualization, data visualisation, information, information visualization, information visualisation, dataviz, datavis, infoviz">
+    <title>Creating a large-scale interactive force-directed graph</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins|Inter" rel="stylesheet">
+    <link href="../../../../css/global.css" rel="stylesheet">
+    <link href="../../../../css/blog.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+  </head>
+  <body>
+
+    <div id="portfolio__title_img">
+      <div class="portfolio__header" style="background-color: aliceblue">
+        <div style="width: 50%">
+          <h1 class="portfolio__title">Creating a large-scale interactive force-directed graph</h1>
+        </div>
+        <div style="width: 50%">
+          <h3 class="portfolio__description">Combining the rendering capabilities of PIXI.js with the force simulation abilities of D3.js</h3>
+          <p>Tools: D3.js, PIXI.js, Javascript</p>
+        </div>
+      </div>
+    </div>
+
+    <div class='wrapper'>
+      <div class='wrapper-group'>
+
+        <div class='box'>
+            <p>In this blog post, we will explore how to create a force-directed graph using the latest versions of two libraries: PIXI.js v7 and D3 v7. By combining the rendering capabilities of PIXI.js with the force simulation abilities of D3.js, particularly the d3-force module, you can build performant force-directed graphs for your web applications.</p>
+            <p>PIXI.js leverages hardware acceleration through WebGL, making it well-suited for rendering data visualizations that involve a significant amount of data points, interactivity or real-time updates. Similar to D3.js, PIXI.js gives you great control over the graphical elements to create custom visual effects and styles.</p>
+            <p>This is the first article of a three-part series delving deep into the creation of a suite of features or functionality associated with interactive and filterable graphs not meant just to present connections, but also to hopefully encourage data exploration as a graph analytical tool.</p>
+            <p>Readers should have some experience with D3.js and the d3-force module. Basic knowledge of PIXI.js is useful but not required.<span class="text-bold"> I will start off with the webpage setup and data processing work. To skip to the beginning of the PIXI.js section, click <a href="#pixi-start">HERE</a></p>
+            <img width="1100px" height="auto" src="./largescale_pixi_graph.png" class='mockup'>
+        </div>
+
+        <div class='box'>
+          <h2>Getting Started</h2>
+          <p>Before diving into the implementation, let's set up a basic project structure. You can create a directory for your project and include the necessary libraries.</p>
+          <p class="text-bold">1. Create an index.html file containing a DIV element to render the graph in.</p>
+          <p class="text-bold">2. Initialize your project and install PIXI.js and D3 using npm.</p>
+          <code>
+            npm init
+          </code>
+          <br>
+          <code>
+            npm install pixi.js pixi-viewport d3
+          </code>
+          <p class="text-bold">3. Create a Javascript file to write code to generate the force-directed graph. Import the installed modules.</p>
+          <code>
+            import * as PIXI from "pixi.js";
+          </code>
+          <br>
+          <code>
+            import { Viewport } from "pixi-viewport";
+          </code>
+          <br>
+          <code>
+            import * as d3 from "d3";
+          </code>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h2>Data preparation</h2>
+            <p>Ensure you have a separate dataset of nodes and links. d3-force requires the array of nodes to have a property of 'id' and the array of links to have properties 'source' and 'target'. The original properties are appropriately mapped over to fulfill these requirements.</p>
+            <p class="text-bold">The nodes dataset I have are nodes that are hierachial, meaning that they belong to a parent (SEGMENT) and a higher-level parent (SUBMODULE). Such a structure will be necessary for advanced interactivity with the graph, such as click events to expand parent to child nodes and vice versa.</p>
+          </div>
+          <div>
+            <pre>
+              <code class="javascript atom-one-dark">
+    let nodes = data.nodes.map((d) => {
+      return {
+        NAME: d.NAME,
+        SUBMODULE: d.SUBMODULE, // MUST BE A UNIQUE ID
+        SUBMODULE_NAME: d["SUBMODULE NAME"], // PREFERABLY A UNIQUE LABEL
+        SEGMENT: d.SEGMENT, // MUST BE A UNIQUE ID
+        SEGMENT_NAME: d["SEGMENT NAME"], // PREFERABLY A UNIQUE LABEL
+      };
+    });
+
+    let links = data.links.map((d) => {
+      return {
+        SOURCE: d.SOURCE,
+        TARGET: d.TARGET
+      };
+    });
+
+    const N = d3.map(nodes, (d) => d['NAME'])
+    const LS = d3.map(links, (d) => d['SOURCE'])
+    const LT = d3.map(links, (d) => d['TARGET'])
+  
+    nodes = d3.map(nodes, (d, i) => ({ id: N[i], ...d })); 
+    links = d3.map(links, (_, i) => ({
+      source: LS[i],
+      target: LT[i],
+    }));
+
+    // Further code to create style properties an assign to data can be written here
+    const nodeRadiusScale = d3
+      .scaleSqrt()
+      .domain([0, d3.max(Object.values(nodeDegrees))])
+      .range([nodeRadius, nodeRadius * 5])
+      .clamp(true);
+
+    for (let i = 0; i < showEle.nodes.length; i++) {
+      let node = showEle.nodes[i];
+      node.color = colorScale(node.group);
+      node.radius = nodeRadiusScale(node.degree);
+    }
+
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h3>Initialize the d3 force simulation</h3> 
+          </div>
+          <div>
+            <pre>
+              <code class="javascript atom-one-dark">
+    const simulation = d3
+      .forceSimulation()
+      .force(
+        "link",
+        d3.forceLink().id((d) => d.id)
+      )
+      .force(
+        "x",
+        d3.forceX((d) => d.x)
+      )
+      .force(
+        "y",
+        d3.forceY((d) => d.y)
+      )
+      .force(
+        "charge",
+        d3.forceManyBody().strength(-100).distanceMin(100)
+      );
+      .force(
+        "collide",
+        d3.forceCollide().radius((d) => d.radius)
+      ) 
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div class="box" id="pixi-start">
+          <h2>Initializing PIXI application and containers</h2> 
+        </div>
+
+        <div class='box'>
+          <div>
+            <h3>Create the PIXI application and attach it to the webpage's Document Object Model (DOM).</h3> 
+            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Application.html">API documentation: PIXI.Application</a></p>
+            <p class="sidenote">In PIXI v7, the property to set background transparency has been replaced from <span class="code-keyword">backgroundAlpha</span> to <span class="code-keyword">transparent</span></p>
+            <p class="text-bold">A comparison of the same code logic in D3.js is shown beside all PIXI code snippets.</p>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+  const width = window.innerWidth
+  const height = window.innerHeight
+
+  const app = new PIXI.Application({
+    width,
+    height,
+    resolution: 2,
+    transparent: true,
+    antialias: true,
+    autoDensity: true,
+    autoStart: true, 
+  });   
+  
+  document.querySelector('#app').appendChild(app.view);
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+  const svg = d3
+    .select("#app")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-width / 2, -height / 2, width, height]);            
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h3>Next, create the PIXI viewport</h3> 
+            <p class="ref-link"><a href="https://davidfig.github.io/pixi-viewport/jsdoc/">API documentation: pixi-viewport</a></p>
+            <p>Add the viewport to the stage, then easily enable zoom on mousewheel and pan functionality upon dragging of canvas by activating the plugins. <span class="code-keyword">minScale</span> and <span class="code-keyword">maxScale</span> sets limits to the zoom scale. How to programme further actions to graph elements upon zoom will be explained in another article.</p>
+            <p>It is necessary to center the viewport at coordinates (0,0) because unless specified otherwise, the force simulation will render the graph with start coordinates at (0,0) and we want the graph to appear centralized on the browser screen.</p>
+            <p class="sidenote">In PIXI v7, the interaction module has been replaced from <span class="code-keyword">app.renderer.plugins.interaction</span> to <span class="code-keyword">app.renderer.events</span></p>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+    const viewport = new Viewport({
+      screenWidth: width,
+      screenHeight: height,
+      worldWidth: width,
+      worldHeight: height,
+      events: app.renderer.events, 
+    }); 
+    
+    app.stage.addChild(viewport);
+
+    viewport.center = new PIXI.Point(0, 0);
+
+    viewport
+      .drag().pinch().wheel().decelerate()
+      .clampZoom({ minScale: 0.2, maxScale: 5 });
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+    const g = svg.append("g");
+
+    svg.attr("viewBox", [-width / 2, -height / 2, width, height])
+
+    const zoomHandler = d3.zoom().on("zoom", function (event) {
+      g.attr("transform", event.transform);
+    });
+  
+    svg.call(zoomHandler);
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h3>Create PIXI Containers which serve as layers to store PIXI elements such as graphics or sprites</h3> 
+            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Container.html">API documentation: PIXI.Container</a></p>
+            <p>Create a container each for the nodes, labels and links. Similar to SVG group elements, the ordering of containers is important as a PIXI Container initialized later gets rendered above the PIXI Container initialized before it.</p>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+  const linksLayer = new PIXI.Container();
+  viewport.addChild(linksLayer);
+  const nodesLayer = new PIXI.Container();
+  viewport.addChild(nodesLayer);
+  const labelsLayer = new PIXI.Container();
+  viewport.addChild(labelsLayer);
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+  const linkG = g.append("g").attr("class", "links");
+  const nodeG = g.append("g").attr("class", "nodes");
+  const textG = g.append("g").attr("class", "labels");
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div class="box-content">
+            <p>One of the core features and benefits of D3.js is the ability to bind data to elements in the Document Object Model (DOM). With PIXI.js, to make up for the lack of this feature, we can create these <span class="code-keyword">WeakMap</span> objects to externally establish a mapping between various data elements and their corresponding PIXI graphical representations.</p> 
+            <p><span class="text-bold">nodeDataToNodeGfx</span> maps data elements to their graphical representations, and <span class="text-bold">nodeGfxToNodeData</span> maps graphical elements back to their corresponding data.This bidirectional mapping allows you to easily update the visual attributes of nodes based on changes in the data and vice versa.</p>
+            <p>This tecnnique was introduced by <a href="https://zakjan.cz/">Jan Žák</a>. I came across it 3 years ago in this <a href="https://observablehq.com/@zakjan/force-directed-graph-pixi">observable notebook</a> he created.</p>
+            <pre>
+              <code class="javascript atom-one-dark">
+  let nodeDataToNodeGfx = new WeakMap();
+  let nodeGfxToNodeData = new WeakMap();
+  let nodeDataToLabelGfx = new WeakMap();
+  let labelGfxToNodeData = new WeakMap();
+  let linkDataToLinkGfx = new WeakMap();
+  let linkGfxToLinkData = new WeakMap();
+              </code>
+            </pre>
+          </div>
+        </div>
+
+        <div class='box'>
+          <h2>Creating the graph elements, starting with nodes and their labels</h2> 
+          <p>I will compare rendering with D3.js and with PIXI.js. There are alternative methods with PIXI.js to create the graphical elements, but I feel the one I describe in the sections below should be the default way since it is the most performant and scalable.</p>
+          <br>
+
+          <p class="text-bold">Performance Tip: Minimize the Number of PIXI Graphics Object     <span><a href="https://pixijs.com/guides/production/performance-tips">Guide on PIXI.js website</a></span></p>
+          <p>When rendering a large dataset in PIXI.js, it's crucial to optimize performance. Instead of creating individual PIXI Graphics objects for each data point, consider converting the graphic into a texture. By using textures within PIXI Sprites, you can significantly enhance rendering speed and efficiency.</p>
+          <p>Qhat happens if the nodes are of various sizes? Set a fixed size to the graphic object, then make use of the width and height property of a PIXI Sprite to scale accordingly.</p>
+          <br>
+
+          <p class="text-bold">Scalable as an updateable graph</p>
+          <p>Best practice dictates anticipating the potential for a dynamic graph, where the graph's data may require future updates. To ensure maintainability, it's advisable to encapsulate all code that needs to be re-executed upon updates, such as updating graph elements, within a dedicated function, which I name here as <span class='code-keyword'>update</p>
+          <pre>
+            <code>
+    const circleGraphics = new PIXI.Graphics();
+    circleGraphics.beginFill(nodeFill);
+    circleGraphics.lineStyle(nodeStrokeWidth, nodeStroke, nodeStrokeOpacity);
+    circleGraphics.drawCircle(0, 0, nodeRadius * 2);
+
+    const circleTexture = app.renderer.generateTexture(circleGraphics, {
+      resolution: 2,
+    });
+    
+    update();
+            </code>
+          </pre>
+
+          <div class="box-content">
+            <p><a href="https://pixijs.download/dev/docs/PIXI.Graphics.html">API documentation: PIXI.Graphics</a></p>
+
+            <div class='border-black'>
+              <code class="text-bold">const circleGraphics = new PIXI.Graphics();</code>
+              <h4>This line creates a new PIXI Graphics object named circleGraphics. A Graphics object in PIXI.js is a container for vector graphics and shapes. In this context, it will be used to draw a circle.</h4>
+              <br>
+
+              <code class="text-bold">circleGraphics.beginFill(nodeFill);</code>
+              <h4>This sets the fill color of the graphics object.</h4>
+              <br>
+                
+              <code class="text-bold">circleGraphics.lineStyle(nodeStrokeWidth, nodeStroke, nodeStrokeOpacity);</code>
+              <h4>This line sets the properties for drawing the outline (stroke) of the circle. It specifies the stroke width (nodeStrokeWidth), stroke color (nodeStroke), and stroke opacity (nodeStrokeOpacity).</h4>
+              <br>
+              
+              <code class="text-bold">circleGraphics.drawCircle(0, 0, nodeRadius * 2);</code>
+              <h4>Here, a circle is drawn at the coordinates (0, 0) with a radius twice the value of nodeRadius becase texture resolution is doubled.</h4>
+              <br>
+              
+              <code class="text-bold">const circleTexture = app.renderer.generateTexture(circleGraphics, { resolution: 2 });</code>
+              <h4>The generateTexture method takes the PIXI Graphics object as input and creates a texture from it. The resolution value specifies that the texture should be generated at a resolution that is two times higher than the default resolution. This can be useful for ensuring sharp and detailed rendering of the circle, especially on high-density displays.</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <p></p>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">         
+  // Inside the update function
+  let linkDataGfxPairs = [];
+  for (let i = 0; i < nodes.length; i++) {
+    let nodeData = nodes[i];
+
+    let nodeGfx = new PIXI.Container();
+    nodeGfx.name = nodeData.id;
+    nodeGfx.cursor = "pointer";
+    nodeGfx.hitArea = new PIXI.Circle(0, 0, nodeData.radius + 2);
+    nodeGfx.eventMode = "static";
+    nodeGfx.alpha = 1;
+
+    const circle = new PIXI.Sprite(circleTexture);
+    circle.name = "CIRCLE";
+    circle.x = -nodeData.radius;
+    circle.y = -nodeData.radius;
+    circle.tint = nodeData.color;
+    circle.alpha = nodeFillOpacity;
+    circle.width = nodeData.radius * 2;
+    circle.height = nodeData.radius * 2;
+
+    nodeGfx.addChild(circle);
+    nodesLayer.addChild(nodeGfx);
+  
+    let labelGfx = new PIXI.Container();
+    labelGfx.visible = true;
+
+    const textStyle = new PIXI.TextStyle({
+      fontSize: nodeData.radius * 2,
+      align: "left",
+      fill: labelColor,
+      stroke: "black",
+      strokeThickness: 6,
+    });
+
+    const label = new PIXI.Text(nodeData.NAME, textStyle);
+    label.name = "LABEL";
+    label.x = nodeData.radius + 3; // position label next to node without overlap
+    label.y = -nodeData.radius;
+    label.resolution = 2;
+    label.scale.set(0.5);
+
+    labelGfx.addChild(label);
+    labelsLayer.addChild(labelGfx);
+
+    nodeDataGfxPairs.push([nodeData, nodeGfx, labelGfx]);
+  }
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">        
+  const updatedNode = nodeG
+    .selectAll(".node")
+    .data(nodes, (d) => d.id);
+
+  updatedNode.join(
+    (enter) => {
+      const newNode = enter
+        .append("g")
+        .attr("class", "node")
+        .attr("pointer-events", "auto")
+        .attr("cursor", "pointer")
+        .attr("opacity", 1)
+
+      newNode
+        .append("circle")
+        .attr("fill", (d) => d.color)
+        .attr("stroke", nodeStroke)
+        .attr("r", (d) => d.radius)
+        .attr("fill-opacity", nodeFillOpacity)
+        .attr("stroke-opacity", nodeStrokeOpacity)
+        .attr("stroke-width", nodeStrokeWidth);
+
+      return newNode;
+    },
+    (update) => update,
+    (exit) => exit.remove(),
+  );
+
+  const updatedText = textG
+    .selectAll(".label")
+    .data(nodes, (d) => d.id);
+
+  updatedText.join(
+    (enter) => {
+      const newText = enter
+        .append("g")
+        .attr("class", "label")
+        .attr("visibility", 'visible');
+
+      newText
+        .append("text")
+        .attr("x", (d) => d.radius + 3)
+        .attr("dominant-baseline", "middle")
+        .attr("text-anchor", "start")
+        .attr("fill", labelColor)
+        .attr("stroke", "black")
+        .attr("stroke-width", 3)
+        .attr("font-size", (d) => d.radius)
+        .text((d) => d.NAME);
+
+      return newText;
+    },
+    (update) => update,
+    (exit) => exit.remove(),
+  );
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div class="box-content">
+            <p><a href="https://pixijs.download/dev/docs/PIXI.Sprite.html">API documentation: PIXI.Sprite</a></p>
+
+            <div class='border-black'>
+              <code class="text-bold">nodeGfx.name = nodeData.id;</code>
+              <h4>This sets the name property of the container to a unique identifier, based on the id from the nodeData. It can be useful for identifying and manipulating the container later.</h4>
+              <br>
+          
+              <code class="text-bold">nodeGfx.cursor = "pointer";</code>
+              <h4>This line sets the cursor style to "pointer", indicating that when the mouse hovers over this container, it should change to a pointer cursor to indicate interactivity.</h4>
+              <br>
+                
+              <code class="text-bold">nodeGfx.hitArea = new PIXI.Circle(0, 0, nodeData.radius + 2);</code> 
+              <h4>A hit area is defined for the container, which is a circle with a center at (0, 0) and a radius of nodeData.radius + 2. This defines the interactive area of the node, and it extends slightly beyond the graphical representation.</h4>
+              <h4 class="sidenote ">This is a very convenient feauture cumbersome to create with D3.js, as it would require a duplicate overlay of the group element holding the nodes.</h4>
+              <br>
+      
+              <code class="text-bold">nodeGfx.eventMode = "static";</code>
+              <h4>Enables interaction events on the object</h4>
+              <h4 class="sidenote ">In PIXI v7, the property to control how an object responds to interaction events has been replaced from <span class="text-bold">interactive</span> to <span class="text-bold">eventMode</span></h4>
+              <br>
+        
+              <code class="text-bold">nodeGfx.alpha = 1;</code>
+              <h4>Node opacity. The alpha property is set to 1, indicating that the node is fully opaque.</h4>
+              <h4 class="text-bold">Setting alpha to 0 doesn't necessarily prevent the object from being interactive. Interactivity is controlled by the interactive property. An alternative way is to set visibility property to false. </h4>
+              <br>
+          
+              <code class="text-bold">const circle = new PIXI.Sprite(circleTexture);</code>
+              <h4>Here, a new PIXI Sprite is created using the pre-generated texture representing the circular shape of the node.</h4>
+              <br>
+              
+              <code class="text-bold">
+                circle.x = -nodeData.radius;
+                circle.y = -nodeData.radius;
+              </code>
+              <h4>These lines position the sprite within the container so that its center coincides with the center of the nodeGfx container.</h4>
+              <br>
+              
+              <code class="text-bold">circle.tint = nodeData.color</code>
+              <h4>Fills each sprite based on the color assigned to each datapoint. There is no need to specify this if all sprites are of the same color specified in the texture. Setting the tint property of a PIXI.Sprite overrides the color of the sprite's texture</h4>
+              <br>
+              
+              <code class="text-bold">
+                circle.width = nodeData.radius * 2;
+                circle.height = nodeData.radius * 2;
+              </code>
+              <h4>These lines set the width and height of the sprite as the circle diameter.</h4>
+              <br>
+      
+              <code class="text-bold">nodeGfx.addChild(circle);</code>
+              <h4>Each sprite (circle) is added as a child to the nodeGfx container.</h4>
+              <br>
+      
+              <code class="text-bold">nodesLayer.addChild(nodeGfx);</code>
+              <h4>Finally, the nodeGfx container is added as a child to a nodesLayer, the higher-level container used to manage multiple nodes in the application.</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <h3>Next, create the links.</h3> 
+          <p class="text-bold">Bonus: Visualize directionality</p>
+          <p>Arrows help to convey direction and flow between links from source to target nodes. With PIXI, they can be created as a triangle graphic, which will be positioned at the end of the line where you want to indicate direction.</p>
+          <pre>
+            <code class="javascript atom-one-dark">
+    // before update() is triggered
+
+    const triangle = new PIXI.Graphics();
+    let triangleWidth = 12;
+    triangle.beginFill(linkStroke, 1);
+    triangle.lineStyle(0, linkStroke, 1);
+    triangle.moveTo(-triangleWidth, 0);
+    triangle.lineTo(triangleWidth, triangleWidth);
+    triangle.lineTo(triangleWidth, -triangleWidth);
+    triangle.endFill();
+    const triangleTexture = app.renderer.generateTexture(triangle, {
+      resolution: 2,
+    });
+            </code>
+          </pre>
+        </div>
+
+        <div class='box'>
+          <p>There is no need to assign positions to the nodes and links now because they are undefined and will be calculated by the force simulation later on.</p>
+          <div class='border-black'>
+            <code class="text-bold">linkGfx.pivot.set(0, lineSize / 2)</code>
+            <h4>The pivot property is a point around which transformations (such as rotation and scaling) are performed. It serves as the anchor for these transformations. By default, the pivot point is located at the center of the object. Here, it is set to the left edge of the line, accounting for the line height (lineSize).</h4>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">         
+  let linkDataGfxPairs = [];
+  for (let i = 0; i < links.length; i++) {
+    let linkData = links[i];
+    const lineSize = linkData.linkStrokeWidth;
+
+    const linkGfx = new PIXI.Container();
+    linkGfx.name = getSourceId(linkData) + "-" + getTargetId(linkData);
+    linkGfx.pivot.set(0, lineSize / 2);
+    linkGfx.alpha = linkStrokeOpacity;
+
+    const line = new PIXI.Sprite(PIXI.Texture.WHITE);
+    line.name = "LINE";
+    line.x = 0;
+    line.y = -lineSize / 2;
+    line.height = lineSize;
+
+    linkGfx.addChild(line);
+
+    const arrow = new PIXI.Sprite(triangleTexture);
+    arrow.name = "ARROW";
+    arrow.x = 0;
+    arrow.y = -3;
+    arrow.width = 6;
+    arrow.height = 6;
+    arrow.alpha = 0;
+    linkGfx.addChild(arrow);
+
+    linksLayer.addChild(linkGfx);
+
+    linkDataGfxPairs.push([linkData, linkGfx]);
+  }
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">        
+  const link = linkG
+    .selectAll("path.link")
+    .data(links)
+    .join(
+      (enter) =>
+        enter
+          .append("path")
+          .attr("class", "link")
+          .attr("id", (d) => d.source.id + "_" + d.target.id),
+      (update) => update,
+      (exit) => exit.remove(),
+    )
+    .attr("stroke", linkStroke)
+    .attr("stroke-width", linkStrokeWidth)
+    .attr("opacity", linkStrokeOpacity)
+    .attr("d", (d) => generatePath(d));  
+    
+  // Arrowheads
+  svg
+    .append("defs")
+    .append("marker")
+    .attr("id", "arrowhead")
+    .attr("viewBox", "-0 -6 12 12")
+    .attr("refX", 0)
+    .attr("refY", 0)
+    .attr("orient", "auto")
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("xoverflow", "visible")
+    .append("svg:path")
+    .attr("d", "M 0,-6 L 12 ,0 L 0,6")
+    .attr("fill", linkStroke)
+    .style("stroke", "none");
+
+  linkG.selectAll("path.link").attr("marker-mid", "url(#arrowhead)");
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <h3>Populate the WeakMap objects declared above.</h3> 
+          <pre>
+            <code class="javascript atom-one-dark">
+    nodeDataToNodeGfx = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeData, nodeGfx]));
+    nodeGfxToNodeData = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeGfx, nodeData]));
+    nodeDataToLabelGfx = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [nodeData, labelGfx]));
+    labelGfxToNodeData = new WeakMap(nodeDataGfxPairs.map(([nodeData, nodeGfx, labelGfx]) => [labelGfx, nodeData]));
+    linkDataToLinkGfx = new WeakMap(linkDataGfxPairs.map(([linkData, linkGfx]) => [linkData, linkGfx]));
+    linkGfxToLinkData = new WeakMap(linkDataGfxPairs.map(([linkData, linkGfx]) => [linkGfx, linkData]));            
+            </code>
+          </pre>
+        </div>
+
+        <div class='box'>
+          <h2>Updating positions of graph elements</h2>
+        </div>
+
+        <div class='box'>
+          <div class="box-content">
+            <h3>Run the simulation on the graph elements</h3>
+            <p><span class="code-keyword">nodes(nodes)</span> is a method that associates an array of nodes with the simulation. This means that the force simulation will operate on the provided nodes.</p>
+            <p><span class="code-keyword">force("link")</span> is used to specify a force named "link", used to simulate the attractive or repulsive forces between linked nodes in a force-directed graph.</p>
+            <p><span class="code-keyword">links(links)</span> associates an array of links with the "link" force. In a force-directed graph, links represent the connections between nodes, and the "link" force will use these links to calculate and apply the appropriate forces to position the nodes based on the link relationships</p>   
+          <pre>
+            <code class="javascript atom-one-dark">
+  simulation.nodes(nodes).force("link").links(links);    
+            </code>
+          </pre>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div class="box-content">
+            <p><span class="code-keyword">alphaTarget(0.5)</span> is used to set the target alpha value for the simulation. In the context of a force simulation, the alpha value represents the simulation's "cooling rate" or how quickly it converges to a stable state.</p>
+            <p>A higher alpha value (e.g., 1) causes the simulation to converge more quickly but may result in a less stable layout. A lower alpha value (e.g., 0.1) causes the simulation to converge more slowly but can result in a more stable and accurate layout.</p>
+            <p>After setting the alpha target, calling <span class="code-keyword">restart()</span> initiates the simulation with the new alpha target value, allowing the elements (nodes) to adjust their positions based on the new target alpha value.</p> 
+          <pre>
+            <code class="javascript atom-one-dark">
+  simulation.alphaTarget(0.5).restart();   
+            </code>
+          </pre>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h3>The <span class="code-keyword">updatePositions</span> function updates the positions of the graph elements based on the current state of the simulation.</h3>   
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <p class="partition-title">PIXI.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+    function updatePositions() {
+      for (let i = 0; i < nodes.length; i++) {
+        let node = nodes[i];
+        const nodeGfx = nodeDataToNodeGfx.get(node);
+        const labelGfx = nodeDataToLabelGfx.get(node);
+
+        nodeGfx.x = node.x;
+        nodeGfx.y = node.y;
+        labelGfx.x = node.x;
+        labelGfx.y = node.y;
+      }
+
+      for (let i = 0; i < links.length; i++) {
+        let link = showEle.links[i];
+        const sourceNodeData = nodes.find((n) => n.id === getTargetId(link));
+        const targetNodeData = nodes.find((n) => n.id === getSourceId(link));
+        const linkGfx = linkDataToLinkGfx.get(link);
+
+        linkGfx.x = sourceNodeData.x;
+        linkGfx.y = sourceNodeData.y;
+        linkGfx.rotation = Math.atan2(targetNodeData.y - sourceNodeData.y, targetNodeData.x - sourceNodeData.x);
+
+        const line = linkGfx.getChildByName("LINE");
+        const lineLength = Math.max(Math.sqrt((targetNodeData.x - sourceNodeData.x) ** 2 + (targetNodeData.y - sourceNodeData.y) ** 2) - targetNodeData.radius, 0);
+        line.width = lineLength;
+      }
+    }
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <p class="partition-title">D3.js</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+    function updatePositions() {
+      link.attr("d", (d) => generatePath(d));
+      nodeG
+        .selectAll(".node")
+        .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+      textG
+        .selectAll(".label")
+        .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+    }
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class='box'>
+          <h3>Choosing to render a static or dynamic graph</h3>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <div>
+                <p class="partition-title">Dymamic</p>
+                <p>The "tick" event is triggered at regular intervals during the simulation's animation loop. <span class='text-bold'>At each "tick," the simulation updates the positions and velocities of the nodes based on the forces applied to them.</span></p>
+                <p>Because the starting positions of graph elements are undefined, when you begin a simulation, all nodes are essentially placed at the same starting point, usually at coordinates (0,0) on the screen. The close proximity of nodes at the origin causes them to collide with each other as soon as the simulation begins. Nodes exert forces on each other. As nodes experience these forces, they appear to "jump around" or jitter on the screen, attempting to find equilibrium. This jittering is a result of the dynamic nature of the simulation, where forces like repulsion and attraction cause nodes to continually adjust their positions.</p>
+                <p>Eventually, nodes gradually settle into their final positions, but depending on the <span class="code-keyword">alphaTarget</span> value, the speed at which it reaches an equilibrium varies.</p>
+              </div>
+            </div>
+            <div class="box-content-inner">
+              <div>
+                <p class="partition-title">Static</p>
+                <p>Run <span class="code-keyword">updatePositions</span> function once only.</p>
+                <p>I strongly favor this approach because the initial erratic movement of nodes serves little purpose. This not only detracts from the visual experience but can also introduce animation lag in the case of large-scale graphs. <span class='text-bold'>To refresh and realign element positions, reheat the simulation whenever the update function is triggered.</span></p>   
+                <code>Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay()));</code>
+                <p>This line of code determines the number of iterations needed for a D3.js force simulation to reach or approach its minimum alpha value. This calculation takes into account the minimum alpha value, the alpha decay rate, and the cooling process of the simulation. The result of this calculation is then passed as an argument to the tick method to advance the simulation by that number of iterations. This is often used to ensure that the simulation runs long enough to stabilize the layout of the graph.</p>
+              </div>
+            </div>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <pre>
+                <code class="javascript atom-one-dark">
+  simulation.on("tick", () => updatePositions())
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <pre>
+                <code class="javascript atom-one-dark">
+  simulation.tick(Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())));
+
+  updatePositions();
+                </code>
+              </pre>
+            </div>
+          </div>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <video width="100%" height="auto" src="./dynamic_graph.mov" autoplay loop playsinline muted></video>
+            </div>
+            <div class="box-content-inner">
+              <video width="100%" height="auto" src="./static_graph.mov" autoplay loop playsinline muted></video>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3>We've successfully rendered a force-directed graph using PIXI.js! In the upcoming article, I'll explain in detail the creation of an expandable and collapsible feature for the graph to show or hide subgraphs.</h3>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class='header-container'>
+      <nav class="navbar navbar-expand-lg">
+        <div id="navbarResponsive">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">Back to Projects</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    
+
+      <footer>
+        <div class="flex-container">
+          <div class="left"><h1 class="name">Thanks for visiting!</h1> 
+            <div class="column-content">
+              <p style="font-weight: 400; font-size: 1.2rem;">Diana Ow</p> 
+            </div>
+          </div> 
+          <div class="right">
+            <div class="column">
+              <h5 class="column-header">Connect</h5> 
+              <div class="column-content connect">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/dianaow/">LinkedIn</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://github.com/dianaow/">GitHub</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://contra.com/dianaow_viz">Hire me @ Contra</a>
+              </div>
+            </div> 
+            <div class="column">
+              <h5 class="column-header">Contact</h5> 
+              <div class="column-content contact">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="mailto:diana.ow@outlook.com">Personal</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://calendly.com/dianaow/meeting">Meet</a>
+              </div>
+            </div>
+          </div>
+      </div>
+    </footer>
+
+  </body>
+</html>
