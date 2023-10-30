@@ -34,9 +34,9 @@
 
         <div class='box'>
             <p>In this blog post, we will explore how to create a force-directed graph using the latest versions of two libraries: PIXI.js v7 and D3 v7. By combining the rendering capabilities of PIXI.js with the force simulation abilities of D3.js, particularly the d3-force module, you can build performant force-directed graphs for your web applications.</p>
-            <p>PIXI.js leverages hardware acceleration through WebGL, making it well-suited for rendering data visualizations that involve a significant amount of data points, interactivity or real-time updates. Similar to D3.js, PIXI.js gives you great control over the graphical elements to create custom visual effects and styles.</p>
+            <p class="text-bold">PIXI.js leverages hardware acceleration through WebGL, making it well-suited for rendering data visualizations that involve a significant amount of data points, interactivity or real-time updates. Similar to D3.js, PIXI.js gives you great control over the graphical elements to create custom visual effects and styles.</p>
             <p>This is the first article of a three-part series delving deep into the creation of a suite of features or functionality associated with interactive and filterable graphs not meant just to present connections, but also to hopefully encourage data exploration as a graph analytical tool.</p>
-            <p>Readers should have some experience with D3.js and the d3-force module. Basic knowledge of PIXI.js is useful but not required.<span class="text-bold"> I will start off with the webpage setup and data processing work. To skip to the beginning of the PIXI.js section, click <a href="#pixi-start">HERE</a></p>
+            <p>Readers should have some experience with D3.js and the d3-force module. Basic knowledge of PIXI.js is useful but not required. I will start off with the webpage setup and data processing work. To skip to the beginning of the PIXI.js section, click <a href="#pixi-start">HERE</a></p>
             <img width="1100px" height="auto" src="./largescale_pixi_graph.png" class='mockup'>
         </div>
 
@@ -498,7 +498,7 @@
       
               <code class="text-bold">nodeGfx.eventMode = "static";</code>
               <h4>Enables interaction events on the object</h4>
-              <h4 class="sidenote ">In PIXI v7, the property to control how an object responds to interaction events has been replaced from <span class="text-bold">interactive</span> to <span class="text-bold">eventMode</span></h4>
+              <h4 class="sidenote ">In PIXI v7, the property to control how an object responds to interaction events has been replaced from <span class="text-bold">interactive</span> to <span class="text-bold">eventMode</span>     <a href='https://pixijs.com/guides/components/interaction'>API documentation: Interaction</a></h4>
               <br>
         
               <code class="text-bold">nodeGfx.alpha = 1;</code>
@@ -512,6 +512,9 @@
               
               <code class="text-bold">
                 circle.x = -nodeData.radius;
+              </code>
+              <br>
+              <code class="text-bold">
                 circle.y = -nodeData.radius;
               </code>
               <h4>These lines position the sprite within the container so that its center coincides with the center of the nodeGfx container.</h4>
@@ -523,6 +526,9 @@
               
               <code class="text-bold">
                 circle.width = nodeData.radius * 2;
+              </code>
+              <br>
+              <code class="text-bold">
                 circle.height = nodeData.radius * 2;
               </code>
               <h4>These lines set the width and height of the sprite as the circle diameter.</h4>
@@ -674,7 +680,7 @@
             <h3>Run the simulation on the graph elements</h3>
             <p><span class="code-keyword">nodes(nodes)</span> is a method that associates an array of nodes with the simulation. This means that the force simulation will operate on the provided nodes.</p>
             <p><span class="code-keyword">force("link")</span> is used to specify a force named "link", used to simulate the attractive or repulsive forces between linked nodes in a force-directed graph.</p>
-            <p><span class="code-keyword">links(links)</span> associates an array of links with the "link" force. In a force-directed graph, links represent the connections between nodes, and the "link" force will use these links to calculate and apply the appropriate forces to position the nodes based on the link relationships</p>   
+            <p><span class="code-keyword">links(links)</span> associates an array of links with the "link" force. The force uses these links to calculate and apply the appropriate forces to position the nodes based on the link relationships</p>   
           <pre>
             <code class="javascript atom-one-dark">
   simulation.nodes(nodes).force("link").links(links);    
@@ -687,7 +693,7 @@
           <div class="box-content">
             <p><span class="code-keyword">alphaTarget(0.5)</span> is used to set the target alpha value for the simulation. In the context of a force simulation, the alpha value represents the simulation's "cooling rate" or how quickly it converges to a stable state.</p>
             <p>A higher alpha value (e.g., 1) causes the simulation to converge more quickly but may result in a less stable layout. A lower alpha value (e.g., 0.1) causes the simulation to converge more slowly but can result in a more stable and accurate layout.</p>
-            <p>After setting the alpha target, calling <span class="code-keyword">restart()</span> initiates the simulation with the new alpha target value, allowing the elements (nodes) to adjust their positions based on the new target alpha value.</p> 
+            <p>After setting the alpha target, calling <span class="code-keyword">restart()</span> initiates the simulation, allowing the elements to adjust their positions based on the new target alpha value.</p> 
           <pre>
             <code class="javascript atom-one-dark">
   simulation.alphaTarget(0.5).restart();   
@@ -762,8 +768,8 @@
                 <p class="partition-title">Dynamic</p>
                 <p>The "tick" event is triggered at regular intervals during the simulation's animation loop. <span class='text-bold'>At each "tick," the simulation updates the positions and velocities of the nodes based on the forces applied to them.</span></p>
                 <br>
-                <p>Because the starting positions of graph elements are undefined, when you begin a simulation, all nodes are essentially placed at the same starting point, usually at coordinates (0,0) on the screen. The close proximity of nodes at the origin causes them to collide with each other as soon as the simulation begins. Nodes exert forces on each other. As nodes experience these forces, they appear to "jump around" or jitter on the screen, attempting to find equilibrium. This jittering is a result of the dynamic nature of the simulation, where forces like repulsion and attraction cause nodes to continually adjust their positions.</p>
-                <p>Eventually, nodes gradually settle into their final positions, but depending on the <span class="code-keyword">alphaTarget</span> value, the speed at which it reaches an equilibrium varies.</p>
+                <p>Because the starting positions of graph elements are undefined, when you begin a simulation, all nodes are essentially placed at the same starting point, usually at coordinates (0,0) on the screen. The close proximity of nodes at the origin causes them to collide with each other as soon as the simulation begins. Nodes exert forces on each other. <span class='text-bold'>As nodes experience these forces, they appear to "jump around" or jitter on the screen, attempting to find equilibrium.</span> This jittering is a result of the dynamic nature of the simulation, where forces like repulsion and attraction cause nodes to continually adjust their positions.</p>
+                <p>Eventually, nodes gradually settle into their final positions, but depending on the alphaTarget value, the speed at which it reaches an equilibrium varies.</p>
               </div>
             </div>
             <div class="box-content-inner" style="padding: 20px;">
