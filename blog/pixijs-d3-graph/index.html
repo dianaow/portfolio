@@ -15,8 +15,7 @@
     <script>hljs.highlightAll();</script>
 
   </head>
-  <body>
-
+  <body>  
     <div id="portfolio__title_img">
       <div class="portfolio__header" style="background-color: aliceblue">
         <div style="width: 50%">
@@ -304,7 +303,7 @@
           </div>
         </div>
 
-        <div class='box'>
+        <div class='box' id="update">
           <h2>Creating the graph elements, starting with nodes and their labels</h2> 
           <p>I will compare rendering with D3.js and with PIXI.js. There are alternative methods with PIXI.js to create and render the elements, but I feel the one I describe in the sections below should be the default way since it is the most performant and scalable.</p>
           <br>
@@ -357,7 +356,7 @@
           </div>
         </div>
 
-        <div class='box'>
+        <div class='box' id="nodeGfx">
           <div>
             <p></p>
           </div>
@@ -860,5 +859,19 @@
       </div>
     </footer>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get the URL fragment (e.g., "#targetDiv")
+          console.log(window.location.hash)
+          const fragment = window.location.hash;
+
+          if (fragment) {
+              const targetDiv = document.querySelector(fragment);
+              if (targetDiv) {
+                  targetDiv.scrollIntoView({ behavior: "smooth" });
+              }
+          }
+      });
+    </script>
   </body>
 </html>

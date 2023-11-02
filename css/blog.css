@@ -1,9 +1,8 @@
 body {
   position: relative;
   padding: 0 !important;
-  width: 100%;
   box-sizing: border-box;
-  margin: 0;
+  width: 100%;
 }
 
 pre {
@@ -144,6 +143,33 @@ video {
 
 }
 
+.tier1 {
+  font-weight: 900;
+  background-color: navy;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1px solid  navy;
+}
+
+.tier2 {
+  font-weight: 900;
+  background-color: royalblue;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1px solid royalblue;
+}
+
+.tier3 {
+  font-weight: 900;
+  background-color: lightskyblue;
+  color: black;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1px solid lightskyblue;
+}
+
 @media print {
   p {
     line-height: 1.4 !important;
@@ -152,6 +178,9 @@ video {
 
 /* if mobile device max width 420px */
 @media only screen and (max-device-width: 1024px) {
+  .wrapper {
+    width: 125vw;
+  }
   .navbar {
     width: calc(100%-10px);
   } 
