@@ -174,10 +174,22 @@
 
           <div class="box-content-1">
             <div class="box-content-inner">
-              <div class="video-placeholder" data-src="./videos/expand1.mov"></div>
+              <div class="video-container" data-src="./videos/expand1.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/expand1.png"
+                  fetchpriority="high"
+                />
+              </div>
             </div>
             <div class="box-content-inner">
-              <div class="video-placeholder" data-src="./videos/expand2.mov"></div>              
+              <div class="video-container" data-src="./videos/expand2.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/expand2.png"
+                  fetchpriority="high"
+                />  
+              </div>              
             </div>
           </div>
 
@@ -354,10 +366,22 @@ if (d.type === "tier1") {
 
           <div class="box-content-1">
             <div class="box-content-inner">
-              <div class="video-placeholder" data-src="./videos/collapse1.mov"></div>  
+              <div class="video-container" data-src="./videos/collapse1.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/collapse1.png"
+                  fetchpriority="high"
+                />
+              </div>  
             </div>
             <div class="box-content-inner">
-              <div class="video-placeholder" data-src="./videos/collapse2.mov"></div>  
+              <div class="video-container" data-src="./videos/collapse2.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/collapse2.png"
+                  fetchpriority="high"
+                />
+              </div>  
             </div>
           </div>
 
@@ -513,12 +537,24 @@ if (d.type === "tier1") {
             <div class="box-content-inner">
               <p class="text-bold">High Charge</p>
               <code>simulation.force("charge", d3.forceManyBody().strength(-300));</code>
-              <div class="video-placeholder" data-src="./videos/highcharge.mov"></div>  
+              <div class="video-container" data-src="./videos/highcharge.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/expand1.png"
+                  fetchpriority="high"
+                />
+              </div>  
             </div>
             <div class="box-content-inner">
               <p class="text-bold">Low Charge</p>
               <code>simulation.force("charge", d3.forceManyBody().strength(-150));</code>
-              <div class="video-placeholder" data-src="./videos/mediumcharge.mov"></div>  
+              <div class="video-container" data-src="./videos/mediumcharge.mov">
+                <img
+                  id="placeholder_image"
+                  src="./videos/expand1.png"
+                  fetchpriority="high"
+                />
+              </div>  
             </div>
           </div>
 
@@ -574,13 +610,25 @@ if (d.type === "tier1") {
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const videoPlaceholders = document.querySelectorAll(".video-placeholder");
+        const videoPlaceholders = document.querySelectorAll(".video-container");
+
+        const options = {
+          root: null,
+          rootMargin: "0px",
+          threshold: 0.1 // Trigger when .video-container is 10% visible
+        };
 
         const observer = new IntersectionObserver((entries, observer) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
+              // Use entry.target to access the element that triggered the intersection
               const videoPlaceholder = entry.target;
+
               const videoSrc = videoPlaceholder.getAttribute("data-src");
+
+              const imgElement = videoPlaceholder.querySelector("img");
+              videoPlaceholder.removeChild(imgElement)
+              //imgElement.style.display = "none";
 
               const video = document.createElement("video");
               video.src = videoSrc;
@@ -594,7 +642,7 @@ if (d.type === "tier1") {
               observer.unobserve(videoPlaceholder);
             }
           });
-        });
+        }, options);
 
         videoPlaceholders.forEach((videoPlaceholder) => {
           observer.observe(videoPlaceholder);
