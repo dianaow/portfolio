@@ -196,10 +196,11 @@
           <div class="box-content-1">
             <div class="box-content-inner">
               <h3>Clicking a Segment node</h3>
-              <p class="text-bold">Remove node and links</p>
-              <p>Clicking on a <span class='tier2'>SEGMENT</span> will remove it. This involves removing any links where the clicked node acts as a source or target for other nodes.</p>
+              <div class="min-height: 108px;">
+                <p class="text-bold">Remove node and links</p>
+                <p>Clicking on a <span class='tier2'>SEGMENT</span> will remove it. This involves removing any links where the clicked node acts as a source or target for other nodes.</p>
+              </div>
               <br>
-
               <p class="text-bold">Adding nodes and links</p>
               <p>Upon clicking a <span class='tier2'>SEGMENT</span>, the objective is to display the <span class='tier3'>VARIABLES</span> associated with that <span class='tier2'>SEGMENT</span>.</p>
               <p>In addition to introducing new <span class='tier3'>VARIABLES</span>, it also involves creating new connections between these variables. This includes establishing linkages between the <span class='tier3'>VARIABLES</span> and other <span class='tier1'>SUBMODULE</span>, <span class='tier2'>SEGMENT</span>, or <span class='tier3'>VARIABLE</span> nodes, <span class='text-bold'>regardless of whether they belong to the same submodule or a different one.</span></p>
@@ -234,8 +235,10 @@ if (d.type === "tier2") {
             </div>
             <div class='box-content-inner'>
               <h3>Clicking a Submodule node</h3>
-              <p class="text-bold">Remove node and links</p>
-              <p>Clicking on a <span class='tier1'>SUBMODULE</span> will remove it. This involves removing any links where the clicked node acts as a source or target for other nodes.</p>
+              <div class="min-height: 108px;">
+                <p class="text-bold">Remove node and links</p>
+                <p>Clicking on a <span class='tier1'>SUBMODULE</span> will remove it. This involves removing any links where the clicked node acts as a source or target for other nodes.</p>
+              </div>
               <br>
 
               <p class="text-bold">Adding nodes and links</p>
@@ -615,7 +618,7 @@ if (d.type === "tier1") {
         const options = {
           root: null,
           rootMargin: "0px",
-          threshold: 0.1 // Trigger when .video-container is 10% visible
+          threshold: 0.5 // Trigger when .video-container is 50% visible
         };
 
         const observer = new IntersectionObserver((entries, observer) => {
