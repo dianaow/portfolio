@@ -33,16 +33,15 @@
 
         <div class='box'>
             <p>In this blog post, I will explore how to expand (create) an collapse (remove) subgraphs on a force-directed graph. This involves click events to either reveal child nodes belonging to a parent or reverse the action. This article aims to help readers understand the concepts related to filtering or updating graphs and be able to integrate such a feature into force-directed graphs for their web applications.</p>
-            <p>This is the second article of a three-part series delving deep into the creation of a suite of features or functionality associated with interactive and filterable graphs.</p>
-            <p><span class="text-bold"> I will continue from where I left off in my <a href="#pixi-start">previous</a> article.</p>
+            <p>This is the second article of a three-part series delving deep into the creation of a suite of features or functionality associated with interactive and filterable graphs.<span class="text-bold"> I will continue from where I left off in my <a href="https://dianaow.com/blog/pixijs-d3-graph" target="_blank">previous</a> article.</p>
         </div>
 
         <div class="box">
           <h2>What is hierarchial data</h2>
           <p>In the context of a hierarchy with three levels, it means that there are three distinct tiers or layers of elements, each one being more specific or subordinate to the one above it. Here's a breakdown of what each level typically represents:</p>
           <p><span class="text-bold">Tier 1:</span> This is the highest level in the hierarchy, often considered the most general category. Elements at this level provide a broad classification or grouping. In a hierarchical structure, they serve as the top-level nodes.</p>
-          <p><span class="text-bold">Tier 2:</span> The second level is one step below the top tier. It represents a more specific category or subcategory within the higher-level grouping. Elements at this level are usually subsets of the Tier 1 elements.</p>
-          <p><span class="text-bold">Tier 3:</span> The third level is the most specific within the hierarchy. Elements at this level are typically individual items, components, or details within the Tier 2 subcategories. They are the most granular and detailed elements in the hierarchy.</p>
+          <p><span class="text-bold">Tier 2:</span> The second level represents a more specific category or subcategory within the higher-level grouping. Elements at this level are usually subsets of the Tier 1 elements.</p>
+          <p><span class="text-bold">Tier 3:</span> The third level is the most specific within the hierarchy. Elements at this level are typically individual items or details within the Tier 2 subcategories. They are the most granular and detailed elements in the hierarchy.</p>
           <p>A hierarchy with three levels allows for a structured way of organizing and categorizing elements, with each level providing increasing levels of detail and specificity. This type of hierarchy is common in various domains, including organizational structures, classification systems, and data modelling.</p>
         </div>
 
@@ -51,7 +50,7 @@
           <p class="text-bold">Model 1: Display all higher-level nodes (parent hubs) with child nodes connected to a parent hub. A parent node 'expands' by being visually connected to newly introduced child nodes.</p>
           <p class="text-bold">Model 2: Child nodes are not visually connected to parent hub, rather the parent node 'expands' by splitting into child nodes, eliminating the need for a parent hub.</p>
           <p>I believe Model 1 is more commonly encountered in online examples and aligns with the typical mental model for updating graphs.</p>
-          <p>Model 2 was initially introduced to me by a client who requestd this feature for his graph application. It involves displaying connections between nodes from 3 different hierarchical levels within clusters and between clusters. The challenge was intriguing, as I hadn't come across such an interactive graph before. In this article, I'll provide a detailed description of how I approached this task.</p>
+          <p>Model 2 was initially introduced to me by a client who requestd this feature for his graph application. It involves displaying connections between nodes from three different hierarchical levels within clusters and between clusters for a data modelling system. The challenge was intriguing, as I hadn't come across such an interactive graph before. In this article, I'll provide a detailed description of how I approached this task.</p>
           <div style="display: flex">
             <img width="30%" height="auto" src="./images/model2_example.png" class='mockup'>
             <img width="30%" height="auto" src="./images/model2_example1.png" class='mockup'>
@@ -73,7 +72,7 @@
             <p><span class="text-bold">In my dataset, the hierarchy consists of <span class='tier1'>SUBMODULE</span> (Tier 1) nodes at the highest level, followed by <span class='tier2'>SEGMENT</span> (Tier 2) nodes, and <span class='tier3'>VARIABLE</span> (Tier 3) nodes.</span> Ensure that the dataset of nodes maintains a flat structure, even if the original dataset is hierarchical in nature. It <span class='text-bold'>only contains</span> <span class="tier3">VARIABLES</span> and each node is associated with its parent (SEGMENT) and higher-level parent (SUBMODULE). These hierarchical relationships should be represented as single-level properties, rather than nested properties.</p>
             <p>Regarding the links in the dataset, they <span class='text-bold'>represent linkages between</span> <span class='tier3'>VARIABLES</span>. Source and target properties from the array of nodes will be accessed when needed.</p>
             <p class="text-bold">It's required to save a copy of the original dataset of nodes and links. This backup will prove valuable for implementing the collapsible and expandable functionality since it allows direct manipulation of the nodes and links arrays without affecting the original data.</p>
-            <p>To facilitate the distinction of nodes, they can be color-coded and clustered based on their submodule ID.</p>
+            <p>To facilitate the distinction of nodes, they can be color-coded and clustered based on their submodule ID. <span class='text-bold'>To differentiate, I have only given <span class='tier1'>SUBMODULE</span> and <span class='tier2'>SEGMENT</span> nodes labels.</span></p>
           </div>
           <div>
             <pre>
@@ -175,10 +174,10 @@
 
           <div class="box-content-1">
             <div class="box-content-inner">
-              <video width="100%" height="auto" src="./videos/expand1.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/expand1.mov"></div>
             </div>
             <div class="box-content-inner">
-              <video width="100%" height="auto" src="./videos/expand2.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/expand2.mov"></div>              
             </div>
           </div>
 
@@ -263,7 +262,7 @@ if (d.type === "tier1") {
 
             <div>
               <p>Identifying linkages between <span class='tier3'>VARIABLES</span> is straightforward, as the original array of links exclusively contains connections between <span class='tier3'>VARIABLES</span>. However, to establish linkages between <span class='tier3'>VARIABLE</span> and other types, such as <span class='tier1'>SUBMODULES</span> or <span class='tier2'>SEGMENTS</span>, we employ the <code>addLinksBwVarAndOther</code> function.</p>
-              <p class="text-bold sidenote">The primary purpose of this function is to ensure that new links are introduced only if both their source and target nodes are either already visible on screen or will become visible after the <a href="https://dianaow.com/blog/pixijs-d3-graph#update">update</a> function is executed.</p>
+              <p class="text-bold sidenote">The primary purpose of this function is to ensure that new links are introduced only if both their source and target nodes are either already visible on screen or will become visible after the <a href="https://dianaow.com/blog/pixijs-d3-graph#update" target="_blank">update</a> function is executed.</p>
               <br>
               <p class="text-bold">How It Works:</p>
               <p>The function achieves this by initially identifying links that should extend from or enter the clicked node. It then iterates over these potential links, checking whether the connecting node is an on-screen <span class='tier1'>SUBMODULE</span>, <span class='tier2'>SEGMENT</span>, or <span class='tier3'>VARIABLE</span>. To make this determination, it relies on the nodes array, which exclusively represents on-screen nodes.</p>
@@ -355,10 +354,10 @@ if (d.type === "tier1") {
 
           <div class="box-content-1">
             <div class="box-content-inner">
-              <video width="100%" height="auto" src="./videos/collapse1.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/collapse1.mov"></div>  
             </div>
             <div class="box-content-inner">
-              <video width="100%" height="auto" src="./videos/collapse2.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/collapse2.mov"></div>  
             </div>
           </div>
 
@@ -389,8 +388,8 @@ if (d.type === "tier1") {
           <p>The <code>nodeCollapsedState</code> plays a crucial role in determining whether a double-click event should trigger an expand or collapse action. When a segment is in a collapsed state, a double-click should expand it. However, if the clicked node is a submodule, it should always expand.</p>
           <p>In PIXI.js, there is no native double-click mouse action. To achieve this, you can monitor the number of click events and ensure that the time between the first and second click does not exceed 300 milliseconds.</p>
           <p>It's important to note that while JavaScript supports a double-click event, when both a click and double-click event are present, only the click event is fired. Therefore, using a timeout method becomes a useful approach to implement double-click behavior effectively.</p>
-          <p><code>nodeGfx</code> is a PIXI Container of a node, the creation of which is explained in my <a href="https://dianaow.com/blog/pixijs-d3-graph#nodeGfx">previous</a> article.</p>
-          <p class="text-bold">The array of nodes and links to render is mutated in-place, the <a href="https://dianaow.com/blog/pixijs-d3-graph#update">update</a> function is called without a need to pass in any data parameters. The update function redraws the PIXI Containers and Sprites representing each node and link. It then 'reheats' the simulation to reactivate the force-directed simulation that governs the positioning and behavior of nodes in the graph.</p>
+          <p><code>nodeGfx</code> is a PIXI Container of a node, the creation of which is explained in my <a href="https://dianaow.com/blog/pixijs-d3-graph#nodeGfx" target="_blank">previous</a> article.</p>
+          <p class="text-bold">The array of nodes and links to render is mutated in-place, the <a href="https://dianaow.com/blog/pixijs-d3-graph#update" target="_blank">update</a> function is called without a need to pass in any data parameters. The update function redraws the PIXI Containers and Sprites representing each node and link. It then 'reheats' the simulation to reactivate the force-directed simulation that governs the positioning and behavior of nodes in the graph.</p>
           <div>
             <pre>
               <code class="javascript atom-one-dark">
@@ -471,17 +470,17 @@ if (d.type === "tier1") {
       simulation.tick(Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())));
 
       updatePositions();
-
-      prevNodes = nodes
-        .filter((d) => d.type === "tier1" || d.type === "tier2")
-        .map((node) => {
-          return {
-            x: node.x,
-            y: node.y,
-            id: node.type === "tier1" ? node.SUBMODULE : node.SUBMODULE + "_" + node.SEGMENT,
-          };
-        });
     }
+
+    prevNodes = nodes
+    .filter((d) => d.type === "tier1" || d.type === "tier2")
+    .map((node) => {
+      return {
+        x: node.x,
+        y: node.y,
+        id: node.type === "tier1" ? node.SUBMODULE : node.SUBMODULE + "_" + node.SEGMENT,
+      };
+    });
               </code>
             </pre>
             <div style="display: flex">
@@ -514,12 +513,12 @@ if (d.type === "tier1") {
             <div class="box-content-inner">
               <p class="text-bold">High Charge</p>
               <code>simulation.force("charge", d3.forceManyBody().strength(-300));</code>
-              <video width="100%" height="auto" src="./videos/highcharge.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/highcharge.mov"></div>  
             </div>
             <div class="box-content-inner">
               <p class="text-bold">Low Charge</p>
               <code>simulation.force("charge", d3.forceManyBody().strength(-150));</code>
-              <video width="100%" height="auto" src="./videos/mediumcharge.mov" autoplay loop playsinline muted></video>
+              <div class="video-placeholder" data-src="./videos/mediumcharge.mov"></div>  
             </div>
           </div>
 
@@ -530,20 +529,21 @@ if (d.type === "tier1") {
           <h3>This feature represents just one of the many ways to emphasize nodes and connections by focusing on subgraphs. There are numerous other features that can enhance interactions with graphs and uncover key connections, especially in the case of large and complex graphs. In upcoming sections, I will provide in-depth descriptions of how to integrate these additional features, such as a nearest neighbour and shortest path search, into the web application.</h3>
           <img width="100%" height="auto" src="./images/final.png" class='mockup'>
         </div>
-
-    <!-- Navigation -->
-    <div class='header-container'>
-      <nav class="navbar navbar-expand-lg">
-        <div id="navbarResponsive">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">Back to Projects</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </div>
-    
+        
+      </div>
+      </div>
+      <!-- Navigation -->
+      <div class='header-container'>
+        <nav class="navbar navbar-expand-lg">
+          <div id="navbarResponsive">
+            <ul class="navbar-nav">
+              <li class="nav-item active">
+                <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">Back to Projects</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
 
       <footer>
         <div class="flex-container">
@@ -572,5 +572,34 @@ if (d.type === "tier1") {
       </div>
     </footer>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const videoPlaceholders = document.querySelectorAll(".video-placeholder");
+
+        const observer = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const videoPlaceholder = entry.target;
+              const videoSrc = videoPlaceholder.getAttribute("data-src");
+
+              const video = document.createElement("video");
+              video.src = videoSrc;
+              video.autoplay = true;
+              video.loop = true;
+              video.playsInline = true;
+              video.muted = true;
+              video.preload = "none";
+
+              videoPlaceholder.appendChild(video);
+              observer.unobserve(videoPlaceholder);
+            }
+          });
+        });
+
+        videoPlaceholders.forEach((videoPlaceholder) => {
+          observer.observe(videoPlaceholder);
+        });
+      });
+    </script>
   </body>
 </html>

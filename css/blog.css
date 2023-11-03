@@ -170,6 +170,16 @@ video {
   border: 1px solid lightskyblue;
 }
 
+.video-placeholder {
+  width: 100%;
+  height: auto;
+  position: relative;
+}
+
+video {
+  width: 100%;
+  height: auto;
+}
 @media print {
   p {
     line-height: 1.4 !important;
