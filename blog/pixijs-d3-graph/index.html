@@ -160,7 +160,7 @@
         <div class='box'>
           <div>
             <h3>Create the PIXI application and attach it to the webpage's Document Object Model (DOM).</h3> 
-            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Application.html">API documentation: PIXI.Application</a></p>
+            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Application.html" target="_blank">API documentation: PIXI.Application</a></p>
             <p class="sidenote">In PIXI v7, the property to set background transparency has been replaced from <span class="code-keyword">backgroundAlpha</span> to <span class="code-keyword">transparent</span></p>
             <p class="text-bold">A comparison of the same code logic in D3.js is shown beside all PIXI code snippets.</p>
           </div>
@@ -205,7 +205,7 @@
         <div class='box'>
           <div>
             <h3>Next, create the PIXI viewport</h3> 
-            <p class="ref-link"><a href="https://davidfig.github.io/pixi-viewport/jsdoc/">API documentation: pixi-viewport</a></p>
+            <p class="ref-link"><a href="https://davidfig.github.io/pixi-viewport/jsdoc/" target="_blank">API documentation: pixi-viewport</a></p>
             <p>Add the viewport to the stage, then easily enable zoom on mousewheel and pan functionality upon dragging of canvas by activating the plugins. <span class="code-keyword">minScale</span> and <span class="code-keyword">maxScale</span> sets limits to the zoom scale. How to programme further actions to graph elements upon zoom will be explained in another article.</p>
             <p>It is necessary to center the viewport at coordinates (0,0) because unless specified otherwise, the force simulation will render the graph with start coordinates at (0,0) and we want the graph to appear centralized on the browser screen.</p>
             <p class="sidenote">In PIXI v7, the interaction module has been replaced from <span class="code-keyword">app.renderer.plugins.interaction</span> to <span class="code-keyword">app.renderer.events</span></p>
@@ -255,7 +255,7 @@
         <div class='box'>
           <div>
             <h3>Create PIXI Containers which serve as layers to store PIXI elements such as graphics or sprites</h3> 
-            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Container.html">API documentation: PIXI.Container</a></p>
+            <p class="ref-link"><a href="https://pixijs.download/dev/docs/PIXI.Container.html" target="_blank">API documentation: PIXI.Container</a></p>
             <p>Create a container each for the nodes, labels and links. Similar to SVG group elements, the ordering of containers is important as a PIXI Container initialized later gets rendered above the PIXI Container initialized before it.</p>
           </div>
           <div class="box-content-1">
@@ -289,7 +289,7 @@
           <div class="box-content">
             <p>One of the core features and benefits of D3.js is the ability to bind data to elements in the Document Object Model (DOM). With PIXI.js, to make up for the lack of this feature, we can create these <span class="code-keyword">WeakMap</span> objects to externally establish a mapping between various data elements and their corresponding PIXI graphical representations.</p> 
             <p><span class="text-bold">nodeDataToNodeGfx</span> maps data elements to their graphical representations, and <span class="text-bold">nodeGfxToNodeData</span> maps graphical elements back to their corresponding data.This bidirectional mapping allows us to easily update the visual attributes of nodes based on changes in the data and vice versa.</p>
-            <p>This tecnnique was introduced by <a href="https://zakjan.cz/">Jan Žák</a>. I came across it 3 years ago in this <a href="https://observablehq.com/@zakjan/force-directed-graph-pixi">observable notebook</a> he created.</p>
+            <p>This tecnnique was introduced by <a href="https://zakjan.cz/" target="_blank">Jan Žák</a>. I came across it 3 years ago in this <a href="https://observablehq.com/@zakjan/force-directed-graph-pixi" target="_blank">observable notebook</a> he created.</p>
             <pre>
               <code class="javascript atom-one-dark">
   let nodeDataToNodeGfx = new WeakMap();
@@ -331,7 +331,7 @@
           </pre>
 
           <div class="box-content">
-            <p><a href="https://pixijs.download/dev/docs/PIXI.Graphics.html">API documentation: PIXI.Graphics</a></p>
+            <p><a href="https://pixijs.download/dev/docs/PIXI.Graphics.html" target="_blank">API documentation: PIXI.Graphics</a></p>
 
             <div class='border-black'>
               <code class="text-bold">const circleGraphics = new PIXI.Graphics();</code>
@@ -479,7 +479,7 @@
             </div>
           </div>
           <div class="box-content">
-            <p><a href="https://pixijs.download/dev/docs/PIXI.Sprite.html">API documentation: PIXI.Sprite</a></p>
+            <p><a href="https://pixijs.download/dev/docs/PIXI.Sprite.html" target="_blank">API documentation: PIXI.Sprite</a></p>
 
             <div class='border-black'>
               <code class="text-bold">nodeGfx.name = nodeData.id;</code>
@@ -497,7 +497,7 @@
       
               <code class="text-bold">nodeGfx.eventMode = "static";</code>
               <h4>Enables interaction events on the object</h4>
-              <h4 class="sidenote ">In PIXI v7, the property to control how an object responds to interaction events has been replaced from <span class="text-bold">interactive</span> to <span class="text-bold">eventMode</span>     <a href='https://pixijs.com/guides/components/interaction'>API documentation: Interaction</a></h4>
+              <h4 class="sidenote ">In PIXI v7, the property to control how an object responds to interaction events has been replaced from <span class="text-bold">interactive</span> to <span class="text-bold">eventMode</span>     <a href='https://pixijs.com/guides/components/interaction' target="_blank">API documentation: Interaction</a></h4>
               <br>
         
               <code class="text-bold">nodeGfx.alpha = 1;</code>
@@ -812,7 +812,7 @@
         </div>
 
         <div class="box">
-          <h3>We've successfully rendered a force-directed graph using PIXI.js! In the upcoming article, I'll explain in detail the creation of an expandable and collapsible feature for the graph to show or hide subgraphs.</h3>
+          <h3>We've successfully rendered a force-directed graph using PIXI.js! In the <a href="https://dianaow.com/blog/pixijs-d3-graph-2/" target="_blank">next article</a>, I explain in detail the creation of an expandable and collapsible feature for the graph to show or hide subgraphs.</h3>
         </div>
 
       </div>

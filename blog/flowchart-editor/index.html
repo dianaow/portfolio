@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" ccontent="width=device-width, initial-scale=1">
+    <meta name="description" content="Diana Ow's portfolio article">
+    <meta name="author" content="Diana Ow">
+    <meta name="keywords" content="pixijs, pixi.js, d3.js, d3, graph, force-directed graph, graph visualization, graph analysis, network, network visualization, data visualization, data visualisation, information, information visualization, information visualisation, dataviz, datavis, infoviz">
+    <title>Creating a large-scale interactive force-directed graph</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins|Inter" rel="stylesheet">
+    <link href="../../../../css/global.css" rel="stylesheet">
+    <link href="../../../../css/blog.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  </head>
+  <body>  
+    <div id="portfolio__title_img">
+      <div class="portfolio__header" style="background-color: aliceblue">
+        <div style="width: 50%">
+          <h1 class="portfolio__title">Creating a flowchart editor with React Flow</h1>
+        </div>
+        <div style="width: 50%">
+          <h3 class="portfolio__description">Drag-and-drop interface with dynamic grouping and updateable elements</h3>
+          <p>Tools: React Flow, Javascript</p>
+        </div>
+      </div>
+    </div>
+
+    <div class='wrapper'>
+      <div class='wrapper-group'>
+
+        <div class='box'>
+            <p>In this blog post, we will explore how to create a drag-and-drop flowchart editor with custom nodes and edges. Nodes can be dynamically grouped. A flowchart diagram can also be automatically generated from an uploaded JSON file.</p>
+            <p class="text-bold"><a href="https://reactflow.dev/" target="_blank">React Flow</a> provides a set of components and utilities to create node-based editors and interactive diagrams within React applications.</p>
+            <p>The main purpose of this article is to document my process in developing a flowchart editor application. I aim to provide insights that go beyond the React Flow documentation. My goal is for readers to gain useful information, especially regarding the implementation of dynamic grouping and specific interactive features. These aspects, not extensively covered in the React Flow documentation, have been integral to my application's development and I'm eager to share this knowledge with fellow developers.</p>
+            <p></p>
+            <p>Readers should have some experience with React. Basic knowledge of React Flow is useful but not required.</p>
+            <video width="100%" height="auto" src="./videos/workflow_editor.mov" autoplay loop playsinline muted></video>
+        </div>
+
+        <div class='box'>
+          <h2>Getting Started</h2>
+          <p class="text-bold">To scaffold a new React app with Vite you need to do:</p>
+          <code>
+            npm create vite@latest reactflow-diagram -- --template react
+          </code>
+          <br>
+          <p class="text-bold">After the initial setup, you need to install some packages:</p>
+          <code>
+            npm install reactflow
+          </code>
+          <br>
+          <code>
+            npm install @reactflow/node-resizer
+          </code>
+          <br>
+          <code>
+            npm install --save-dev vite-plugin-svgr
+          </code>
+          <p class="text-bold">We will be putting all of our code in the <code>src</code> folder and using <code>App.jsx</code> file (entry file for vite) to contain the main componenet. To be able to use React Flow hooks, we need to wrap the main component with the ReactFlowProvider component.</p>
+          <br>
+
+          <div class="box-content-1">
+            <div class="box-content-inner-code">
+              <p class="text-bold">App.jsx</p>
+              <pre>
+                <code class="javascript atom-one-dark">
+    import ReactFlow, { ReactFlowProvider, Controls } from 'reactflow';
+
+    // import the React Flow styles
+    import 'reactflow/dist/style.css';
+      
+    function App() {
+      return (
+        &lt;div className="App"&gt;
+          &lt;ReactFlowProvider&gt;
+            &lt;div className="reactflow-wrapper"&gt;
+            &lt;ReactFlow&gt;
+              &lt;Controls /&gt;
+            &lt;/ReactFlow&gt;
+            &lt;/div&gt;
+          &lt;/ReactFlowProvider&gt;
+        &lt;/div&gt;
+      );
+    }
+      
+    export default App;
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner-code1">
+              <p class="text-bold">App.css</p>
+              <pre>
+                <code>
+    .App {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+    }
+    
+    .reactflow-wrapper {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h2>Data </h2>
+          <p>The ReactFlow component renders based on a given set of nodes and edges. Since the drag-and-drop editor will be blank initially, the array of nodes and edges will be empty. After dragging new components and dropping them onto the canvas or drawing connections between nodes, new data objects get added to the array of nodes and edges.</p>
+          <p>Here is a sample array of nodes and edges, and their properties. Properties specified affects the style and behaviour of each node and edge. You may view more <a href="https://reactflow.dev/api-reference/types/node-props" target="_blank">node properties</a> and <a href="https://reactflow.dev/api-reference/types/edge-props" target="_blank">edge properties</a> that React Flow accepts.</p>
+          <div class="box-content-1">
+            <div class="box-content-inner">
+              <pre>
+                <code class="javascript">
+  const nodes = [
+    {
+      id: '1',
+      type: 'input',
+      data: { label: 'Input Node' },
+      position: { x: 250, y: 25 },
+    },
+    {
+      id: '2',
+      type: 'output',
+      data: { label: 'Output Node' },
+      position: { x: 250, y: 250 },
+    },
+  ];
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner">
+              <pre>
+                <code class="javascript">
+  const edges = [
+    { id: 'e1-2', source: '1', target: '2' },
+    { id: 'e2-3', source: '2', target: '3' },
+  ];
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class='box'>
+          <div>
+            <h2>Custom nodes</h2>
+            <p>We will be creating a new component for our custom node type. Let's create a new folder called nodes with a file called <code>CustomNode.jsx</code> with the following code. The node will be a square of 64 by 64 pixels and contain a label and SVG icon.</p>
+            <p>Store SVG icons that you want rendered inside nodes within the assets folder. Within the same component, you may assign different icons to different nodes through a conditional loop based on a data attribute in the nodes array.</p>
+          </div>
+
+          <div class="box-content-1">
+            <div class="box-content-inner" style="border: 1px solid black; padding: 10px; margin: 10px;">
+              <p>To import transform SVGs into React components, I installed the <a href="https://www.npmjs.com/package/vite-plugin-svgr" target="_blank">vite-plugin-svgr</a> module. Register the plugin SVGR to Vite in <code>vite.config.js</code></p>
+              <span class="text-bold">vite.config.js</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+    import { defineConfig } from 'vite'
+    import react from '@vitejs/plugin-react'
+    import svgr from "vite-plugin-svgr";
+    
+    // https://vitejs.dev/config/
+    export default defineConfig({
+      plugins: [svgr(), react()],
+    })                
+                </code>
+              </pre> 
+            </div>
+          </div>
+          
+          <p>I opted to enclose the node within a div element due to my intention to nest icons within the node. By doing so, I can easily structure and manage the internal elements. Subsequently, I apply styles to the specified div elements. An alternative approach would be to directly style the node div itself using React Flow's provided class name for the node. Both methods offer flexibility, and the choice between them depends on the specific design and styling requirements of the project.</p>
+
+          <div class="box-content-1">
+            <div class="box-content-inner-code">
+              <span class="text-bold">CustomNode.jsx</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+import React from 'react';
+import { Handle, Position } from 'reactflow';
+import { ReactComponent as IconComponent } from "./assets/nodes/common/node.svg";
+import './nodes.css'
+
+export default function CustomNode({ data, isConnectable }) => {
+  return (
+    &lt;div id="nodeWrapper"&gt;
+      &lt;div id="node"&gt;
+        &lt;IconComponent/&gt;
+        &lt;Handle 
+            type="target"
+            position={Position.Left} 
+            isConnectable={isConnectable}
+          /&gt;
+          &lt;Handle 
+            type="source" 
+            position={Position.Right} 
+            isConnectable={isConnectable}
+          /&gt;
+          &lt;div>{data.label}&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner-code1">
+              <span class="text-bold">nodes.css</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+  #nodeWrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
+  }
+  
+  #node {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+  }
+
+  // Alternative way of assigning style
+  .react-flow__node-defaultNode {
+  }
+                </code>
+              </pre>
+            </div>
+          </div>
+
+          <img width="65%" height="auto" src="./images/node_console.png">
+          <br>
+          <br>
+          <p>You may generate multiple components, each designed to represent a distinct node type. We will be creating a new file named <code>GroupNode.jsx</code> to define the characteristics of a Group node. Ensure that this component is styled uniquely, differentiating it from the regular icon nodes by utilizing the designated class name for the node type. 
+          <span class='text-bold'>To provide resizing capabilities for nodes, we will be incorporating React Flow's <code>NodeResizer</code> component.</span> This becomes particularly valuable for Group nodes, as it facilitates dynamic adjustments to it's dimensions. This flexibility is especially beneficial when accommodating the visual arrangement of icon nodes (child nodes) within the parent Group node.</p>
+          <p><a href="https://reactflow.dev/api-reference/components/node-resizer" target="_blank">React Flow documentation: NodeResizer</a></p>
+
+          <div class="box-content-1">
+            <div class="box-content-inner-code">
+              <span class="text-bold">GroupNode.jsx</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+import React from 'react';
+import { Handle, Position } from 'reactflow';
+import { NodeResizer } from '@reactflow/node-resizer';
+import './nodes.css'
+
+export default function GroupNode({ data, isConnectable, selected }) {
+  return (
+    &lt;div&gt;
+      &lt;NodeResizer color="#4285F4" isVisible={selected} minWidth={30} minHeight={30} /&gt;
+      &lt;Handle 
+          type="target"
+          position={Position.Left} 
+          isConnectable={isConnectable}
+      /&gt;
+      &lt;Handle 
+          type="source" 
+          position={Position.Right} 
+          isConnectable={isConnectable}
+      /&gt;
+      &lt;div&gt;{data.label}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner-code1">
+              <span class="text-bold">nodes.css</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+  .react-flow__node-groupNode {
+    width: 100px;
+    height: 100px;
+    background-color: #AECBFA;
+    border: #4285F4;
+  }
+                </code>
+              </pre>
+              <div style="padding:10px">
+                <video width="100%" height="auto" src="./videos/noderesizer.mov" autoplay loop playsinline muted></video>
+              </div>
+            </div>
+          </div>
+
+          <img width="65%" height="auto" src="./images/group_console.png">
+        </div>
+
+        <div class='box'>
+          <h2>Custom edges</h2>
+          <div>
+            <p>We will be creating a new component for our custom edge type. Let's create a new folder called edges with a file called <code>CustomEdge.jsx</code> with the following code. This component renders a stepped path for each object in the edges array.</p>
+            <p><span class='text-bold'>We are implementing three distinct edge types for user selection: 'Line', 'Single Connector' with an arrowhead, and 'Double Connector' with arrowheads at both ends.</span> A singular component serves as the template for all three stepped path edges. The rationale behind this design choice is to utilize a single component and dynamically pass in the <code>markerStart</code> and <code>markerEnd</code> properties as props. This approach allows us to achieve varied arrowhead configurations while maintaining code simplicity and avoiding redundancy.</p>
+            <pre>
+              <code class="javascript atom-one-dark">
+  const edgeObject = {
+    ...,
+    markerEnd: {
+      type: edgeType === 'line' ? null : MarkerType.ArrowClosed,
+      width: 10,
+      height: 10
+    },
+    markerStart: {
+      type: (edgeType === 'line' || edgeType === 'single-connector') ? null : MarkerType.ArrowClosed,
+      width: 10,
+      height: 10
+    }  
+  }
+              </code>
+            </pre>
+          </div>
+
+          <div class="box-content-1">
+            <div class="box-content-inner-code">
+              <span class="text-bold">CustomEdge.jsx</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+  import React from 'react';
+  import { BaseEdge, getSmoothStepPath } from 'reactflow';
+
+  export default function CustomEdge({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    ...props
+  }) {
+
+    const [path, labelX, labelY, offsetX, offsetY] = getSmoothStepPath({
+      sourceX: source.x,
+      sourceY: source.y,
+      sourcePosition: Position.Right,
+      targetX: target.x,
+      targetY: target.y,
+      targetPosition: Position.Left,
+    });
+
+    return (
+      &lt;BaseEdge path={edgePath} {...props} /&gt;
+    );
+  }  
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner-code1">
+              <p>Beyond the <code>getSmoothStepPath</code> util, there are other path utils React Flow provides such as <code>getStraightPath</code> and <code>getBezierPath</code> that you can choose to use in your edge components.</p>
+              <a href="https://reactflow.dev/api-reference/utils/get-smooth-step-path" target="_blank">React Flow documentation: getSmoothStepPath</a>
+            </div>
+          </div> 
+
+          <div style="width: 65%; border: 1px solid black; padding: 10px; margin: 10px;">
+            <p>React Flow provides four distinct edge types: default (bezier), straight, step, and smoothstep. The desired type can be specified using the type attribute for each object in the array of edges. The built-in edge types offer a versatile and straightforward solution without necessitating the creation of custom edge components in every instance.</p>
+            <pre>
+              <code class="javascript atom-one-light">
+  const edges = [
+    { id: 'e1-2', source: '1', target: '2', type: 'step' },
+    { id: 'e2-3', source: '2', target: '3', type: 'straight' },
+  ];
+              </code>
+            </pre>
+          </div>
+
+        </div>
+
+        <div class='box'>
+          <p>To use the new components in the app, import them into the App component. <span class='text-bold'>Register the custom node and edge components by adding it to the nodeTypes prop of the ReactFlow component.</span> When this happens, the custom components will be utilized and wrapped to provide basic functionality like selecting or dragging.</p>
+          <p>Since the initial state of the flowchart editor is a blank canvas, initialize an empty array of nodes and edges.</p>
+          <pre>
+            <code class="javascript react atom-one-dark">
+  import CustomNode from './nodes/CustomNode';
+  import CustomEdge from './edges/CustomEdge';
+  import GroupNode from './nodes/GroupNode';
+
+  const nodeTypes = {
+    defaultNode: CustomNode,
+    groupNode: GroupNode,
+  }
+  
+  const edgeTypes = {
+    edge: CustomEdge
+  }    
+
+  function App() {
+    const [nodes, setNodes] = useState([]);
+    const [edges, setEdges] = useState([]);
+
+    return (
+      &lt;div className="App"&gt;
+        &lt;ReactFlowProvider&gt;
+          &lt;div className="reactflow-wrapper"&gt;
+          &lt;ReactFlow
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            nodes={nodes}
+            edges={edges}       
+          &gt;
+            &lt;Controls /&gt;
+          &lt;/ReactFlow&gt;
+          &lt;/div&gt;
+        &lt;/ReactFlowProvider&gt;
+      &lt;/div&gt;
+    );
+  }
+            </code>
+          </pre>         
+        </div>
+
+        <div class='box'>
+          <div>
+            <h2>Drag and drop feature</h1> 
+            <h3>Create and style a sidebar component with the components that can be dragged and dropped onto screen.</h3>
+            <p class="partition-title" style="text-align: left">onDragStart</p>
+            <p><span class='text-bold'>event</span>: This is the event object generated by the "dragstart" event. It contains information about the drag operation, such as the mouse position and the dragged element.</p>
+            <p>event.dataTransfer is part of the HTML5 Drag and Drop API, which React Flow leverages for drag-and-drop functionality. </p>
+            <p><span class='text-bold'>event.dataTransfer.setData('application/reactflow', nodeType)</span>: The data is associated with a specific MIME type ('application/reactflow') and its value is the nodeType. This data will be accessible during the drop event, allowing you to identify the type of node being dragged.</p>
+            <p><span class='text-bold'>event.dataTransfer.effectAllowed = 'move'</span>: This is used to set the type of drag-and-drop operation allowed for the dragged data. The value 'move' indicates that the data can be dragged to a new location.</p>
+            <p class="partition-title" style="text-align: left">setEdgeType</p>
+            <p>When any line icon is clicked, this function updates the edge type, and the parent component is notified of the new selection. In the next section, we will see how the parent App component uses this newly selected edge type.</p>
+          </div>
+
+          <div class="box-content-1">
+            <div class="box-content-inner-code">
+              <span class="text-bold">Sidebar.jsx</span>
+              <pre>
+                <code class="javascript atom-one-dark">
+import React from 'react';
+import { ReactComponent as Group } from "./assets/nodes/common/group.svg"
+import { ReactComponent as Node } from "./assets/nodes/common/node.svg"
+import { ReactComponent as Line } from "./assets/nodes/common/line.svg"
+import { ReactComponent as SingleConnector } from "./assets/nodes/common/connector-single.svg"
+import { ReactComponent as DoubleConnector } from "./assets/nodes/common/connector-double.svg"
+
+export default ({setEdgeType}) => {
+  const onDragStart = (event, nodeType) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  return (
+    &lt;div className="sidebarWrapper"&gt;
+      &lt;h2&gt;Components&lt;/h2&gt;
+      &lt;div className="sidebar--cloud-components"&gt;
+        &lt;div className='sidebar--items' onClick={() => setEdgeType('line')}&gt;
+          &lt;Line /&gt;
+          &lt;div&gt;Line&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div className='sidebar--items' onClick={() => setEdgeType('single-connector')}&gt;
+          &lt;SingleConnector /&gt;
+          &lt;div>Single Connector&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div className='sidebar--items' onClick={() => setEdgeType('double-connector')}&gt;
+          &lt;DoubleConnector /&gt;
+          &lt;div>Double Connecto&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div className='sidebar--items' onDragStart={(event) => onDragStart(event, 'Node')} draggable&gt;
+          &lt;Node /&gt;
+          &lt;div>Node&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div className='sidebar--items' onDragStart={(event) => onDragStart(event, 'Group')} draggable&gt;
+          &lt;Group /&gt;
+          &lt;div>Group&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+                </code>
+              </pre>
+            </div>
+            <div class="box-content-inner-code1">
+              <img width="100%" height="auto" src="./images/sidebar.png">
+            </div>
+          </div>
+
+          <div>
+            <h3>Actions taken upon drag and drop</h3>
+            <div class="box-content-1">
+              <div class="box-content-inner-code">
+                <pre>
+                  <code class="javascript atom-one-dark">
+import { useState, useRef, useCallback } from 'react'
+import ReactFlow, { ReactFlowProvider, Controls, applyNodeChanges, applyEdgeChanges, addEdge } from 'reactflow';
+import CustomNode from './nodes/CustomNode';
+import CustomEdge from './edges/CustomEdge';
+import GroupNode from './nodes/GroupNode';
+import SideBar from './sidebar/SideBar';
+import './App.css'
+
+function App() {
+  let countNodes = 0
+  const reactFlowWrapper = useRef(null);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [edgeType, setEdgeType] = useState('single-connector')
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => { 
+      return addEdge({
+        ...params, 
+        id: params.source + '-' + params.target, 
+        type: 'step', 
+        markerEnd: {
+          type: edgeType === 'line' ? null : MarkerType.ArrowClosed,
+          width: 10,
+          height: 10
+        },
+        markerStart: {
+          type: (edgeType === 'line' || edgeType === 'single-connector') ? null : MarkerType.ArrowClosed,
+          width: 10,
+          height: 10
+        }  
+      }, eds)
+    })
+  })
+
+  const onNodesChange = useCallback(
+    (changes) => {
+      setNodes((nds) => {
+        return applyNodeChanges(changes, nds)
+      })
+    },
+    [setNodes]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes) => {
+      setEdges((eds) => {
+        return applyEdgeChanges(changes, eds)
+      })
+    },
+    [setEdges]
+  );
+
+
+
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+
+
+
+
+
+
+
+
+
+
+  
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const type = event.dataTransfer.getData('application/reactflow');
+
+      // check if the dropped element is valid
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
+
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      const newNode = {
+        id: type === 'Group' ? `group-${countNodes+1}` : `nodes-${countNodes+1}`,
+        type: type === 'Group' ? 'groupNode' : 'defaultNode',
+        position,
+        data: { label: `${type}` }
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+
+      countNodes++
+    },
+    [reactFlowInstance]
+  );
+
+  return (
+    &lt;div className="App"&gt;
+      &lt;ReactFlowProvider&gt;
+        &lt;div className="reactflow-wrapper" ref={reactFlowWrapper}&gt;
+        &lt;ReactFlow
+          nodes={nodes}
+          edges={edges}   
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={setReactFlowInstance}
+          onDrop={onDrop}
+          onDragOver={onDragOver}     
+        &gt;
+          &lt;Controls /&gt;
+        &lt;ReactFlow setEdgeType={setEdgeType} /&gt;
+        &lt;/div&gt;
+        &lt;Sidebar /&gt;
+      &lt;/ReactFlowProvider&gt;
+    &lt;/div&gt;
+  );
+}
+                  </code>
+                </pre> 
+              </div>
+              <div class="box-content-inner-code-1">
+                <p><span class="text-bold">To handle new connections, you need to implement an <code class="partition-title" style="text-align: left">onConnect</code> handler.</span> It returns an array of edges with the newly created one, where you will be able to set options for the new edge. In the previous section, we have seen how a new edge type is selected from the sidebar. The App component defines a <code>setEdgeType</code> function that will receive data from the SideBar (child) component. This function will be passed as a prop to the child component. In the child component, when the click event occurs, the callback function passed down from the parent is invoked with the relevant data as an argument. Back in the parent component, the <code>setEdgeType</code> function is triggered with the data received from the child. It sets the <code>edgeType</code> and when <code>onConnect</code> is triggered upon drawing a connection from one node handle to another, the updated <code>edgeType</code> value decides the arrowhead configuration.</p>
+                <br>
+                <p class="text-bold">In order to select, drag and remove nodes and edges you need to implement an <code class="partition-title" style="text-align: left">onNodesChange</code> and an <code class="partition-title" style="text-align: left">onEdgesChange</code> handler.</p>
+                <br>
+                <p><code class="partition-title" style="text-align: left">onDragOver</code> specifies that the dragged item can be moved to the drop location. useCallback is a hook in React used to memoize functions to prevent unnecessary re-renders unless the dependencies change. This helps to optimizing performance, especially where the <code>onDragOver</code> function is used as a prop for the child component.</p>
+                <br>
+                <p><code class="partition-title" style="text-align: left">onDrop</code> function defines the action to take after the item is dropped. To calculate the position of the dropped element relative to the React Flow wrapper, we retrieve the bounds of the React Flow wrapper, then calculate the position of the dropped element relative to the wrapper.</p>
+                <p>We create a new node to represent this dropped elemenet, specifying the properties we want updated. Lastly, we add this new node to the array of nodes.</p>
+                <video width="100%" height="auto" src="./videos/dragdrop.mov" autoplay loop playsinline muted></video>
+              </div>  
+            </div>
+          </div>
+
+        </div>
+
+        <div class="box">
+          <h3>In the next article, we will be looking at how to create dynamic grouping (ie. nesting of nodes) and updating node data attributes through a form.</h3>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class='header-container'>
+      <nav class="navbar navbar-expand-lg">
+        <div id="navbarResponsive">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">Back to Projects</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    
+
+      <footer>
+        <div class="flex-container">
+          <div class="left"><h1 class="name">Thanks for visiting!</h1> 
+            <div class="column-content">
+              <p style="font-weight: 400; font-size: 1.2rem;">Diana Ow</p> 
+            </div>
+          </div> 
+          <div class="right">
+            <div class="column">
+              <h5 class="column-header">Connect</h5> 
+              <div class="column-content connect">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/dianaow/">LinkedIn</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://github.com/dianaow/">GitHub</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://contra.com/dianaow_viz">Hire me @ Contra</a>
+              </div>
+            </div> 
+            <div class="column">
+              <h5 class="column-header">Contact</h5> 
+              <div class="column-content contact">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="mailto:diana.ow@outlook.com">Personal</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://calendly.com/dianaow/meeting">Meet</a>
+              </div>
+            </div>
+          </div>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get the URL fragment (e.g., "#targetDiv")
+          console.log(window.location.hash)
+          const fragment = window.location.hash;
+
+          if (fragment) {
+              const targetDiv = document.querySelector(fragment);
+              if (targetDiv) {
+                  targetDiv.scrollIntoView({ behavior: "smooth" });
+              }
+          }
+          hljs.highlightAll()
+      });
+    </script>
+  </body>
+</html>

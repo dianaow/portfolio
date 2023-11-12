@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" ccontent="width=device-width, initial-scale=1">
+    <meta name="description" content="Diana Ow's portfolio article">
+    <meta name="author" content="Diana Ow">
+    <meta name="keywords" content="pixijs, pixi.js, d3.js, d3, graph, force-directed graph, graph visualization, graph analysis, network, network visualization, data visualization, data visualisation, information, information visualization, information visualisation, dataviz, datavis, infoviz">
+    <title>Creating a large-scale interactive force-directed graph</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins|Inter" rel="stylesheet">
+    <link href="../../../../css/global.css" rel="stylesheet">
+    <link href="../../../../css/blog.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  </head>
+  <body>  
+    <div id="portfolio__title_img">
+      <div class="portfolio__header" style="background-color: aliceblue">
+        <div style="width: 50%">
+          <h1 class="portfolio__title">Creating a flowchart editor with React Flow</h1>
+        </div>
+        <div style="width: 50%">
+          <h3 class="portfolio__description">Drag-and-drop interface with dynamic grouping and updateable elements</h3>
+          <p>Tools: React Flow, Javascript</p>
+        </div>
+      </div>
+    </div>
+
+    <div class='wrapper'>
+      <div class='wrapper-group'>
+
+        <div class="box">
+          <h2>Dynamic Grouping</h2>
+          <p>We will now learn how to group nodes dynamically. Group nodes can be created by dragging them from the sidebar to the canvas. An icon node can then be added to the group through dragging it within the boundaries of the group. </p>
+          <p>We have to be mindful that there may be any level of group nesting.</p>
+          <p>What the function below does is to identify all group nodes and check if the moved node is within the boundaries of any group node. If so, the moved node is added into the node attribtes of the group node. However, this group cannot be a child of another group node. To nest. This is a limitation of the current </p>
+          <pre>
+            <code class="javascript atom-one-dark">
+  const isGroup = d => d.type === 'group' || d.type === 'groupNode'
+  const isNode = d => d.type === 'node' || d.type === 'defaultNode' 
+
+  function recursiveFindNode(obj, id, imputeObj) {
+    if (obj.id === id) {
+      // found the object to impute, so merge the imputeObj into the current object
+      Object.assign(obj, imputeObj);
+      return true;
+    } else if (Array.isArray(obj.nodes)) {
+      // recursively check each child node
+      for (const node of obj.nodes) {
+        if (recursiveFindNode(node, id, imputeObj)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  function addToGroup(nds, changes) {
+    //find the changed node
+    const nodeAddToGrp = nds.find(n => n.id === changes[0].id) || changes[0] || {}
+
+    //find the group nodes (other group nodes if it's a group node being moved)
+    const groupNodes = nds.filter(d => isGroup(d) && d.id !== changes[0].id && !d.parentNode)
+
+    //check if the moved node position is within the boundaries of any group node (only without a parent)
+    //since a node can only be nested into one group at a time, there should not be multiple groups which node overlaps with 
+    groupNodes.forEach(g => {
+      // (to note: still do this even if the moved node is already within the boundaries of any group)
+      if(changes[0].position && g.position && Object.keys(nodeAddToGrp).length !== 0){
+        let posX = changes[0].positionAbsolute ? changes[0].positionAbsolute.x : changes[0].position.x // have to do this because a group node has no positionAbsolute attributes
+        let posY = changes[0].positionAbsolute ? changes[0].positionAbsolute.y : changes[0].position.y
+
+        // option1: only add the node if it is fully fitted within the group
+        //if(posX >= g.position.x && posY >= g.position.y && (posX + nodeAddToGrp.width) <= (g.position.x + g.width) && (posY + nodeAddToGrp.height) <= (g.position.y + g.height)){
+        
+        // option2: add the node if the top-left coordinate is within the group (whole node is not needed to be inside the group)
+        if(posX >= g.position.x && posY >= g.position.y && posX <= (g.position.x + g.width) && posY <= (g.position.y + g.height)){
+          nodeAddToGrp.extent = 'parent' // restrict movement to node to within group
+          nodeAddToGrp.parentNode = g.id // modify moved node to indicate its part of a group
+          if(changes[0].position.x === posX) {
+            nodeAddToGrp.position = {x: changes[0].position.x-g.position.x, y: changes[0].position.y-g.position.y} // positional coordinates relative to group
+          } else {
+            nodeAddToGrp.position = {x: changes[0].position.x, y: changes[0].position.y} 
+          }
+          nodeAddToGrp.positionAbsolute = {x: g.position.x, y: g.position.y} // coordinates of group
+          nodeAddToGrp.zIndex = 3
+
+          if(!g.nodes.some(d => d.id === nodeAddToGrp.id)){
+            g.nodes.push(nodeAddToGrp)
+          }
+        }
+      }
+    })
+
+    return nodeAddToGrp
+  }
+
+
+  function App() {
+
+    // rest of code
+    // ...
+    
+    const onNodesChange = useCallback(
+      (changes) => {
+        setNodes((nds) => {
+          
+          const nodeAddToGrp = addToGroup(nds, changes) 
+  
+          if(Object.keys(nodeAddToGrp).length !== 0 && nodeAddToGrp.parentNode){
+            // all nodes in a flat structure (single nodes not picked, the picked node (single/group), groups not picked)
+            nds = [...nds.filter(d => isNode(d) && d.id !== nodeAddToGrp.id), nodeAddToGrp, ...nds.filter(d => isGroup(d) && d.id !== changes[0].id)]
+            
+            // lone nodes and group nodes that are not nested
+            recursiveFindNode(rawDataCopy, nodeAddToGrp.id, {...nodeAddToGrp})
+            return nds
+          } 
+  
+          recursiveFindNode(rawDataCopy, nodeAddToGrp.id, {...nodeAddToGrp})
+          return applyNodeChanges(changes, nds)
+        })
+      },
+      [setNodes]
+    );
+  
+    const onDrop = useCallback(
+      (event) => {
+
+        // rest of code
+        // ...
+
+        const newNode = {
+          id: type === 'Group' ? `group-${countNodes+1}` : `node-${countNodes+1}`,
+          type: type === 'Group' ? 'groupNode' : 'defaultNode',
+          position,,
+          data: { label: `${type}`}
+        };
+  
+        setNodes((nds) => {
+          let newNodesChanged = {...newNode}
+          if(nds.length > 0) newNodesChanged = addToGroup(nds, [{...newNode}]) 
+          return nds.concat(newNodesChanged)
+        }); // create and add the new node
+  
+      },
+      [reactFlowInstance]
+    );
+
+    return (
+      &lt;ReactFlowProvider&gt;
+        &lt;div className="reactflow-wrapper" ref={reactFlowWrapper}&gt;
+        &lt;ReactFlow
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={setReactFlowInstance}
+          onDrop={onDrop}
+          onDragOver={onDragOver}     
+        &gt;
+          &lt;Controls /&gt;
+        &lt;/ReactFlow&gt;
+        &lt;/div&gt;
+        &lt;Sidebar /&gt;
+      &lt;/ReactFlowProvider&gt;
+    );
+  }
+            </code>
+          </pre>  
+        </div>
+
+        <div class="box">
+          <h2>Updating nodes attributes</h2>
+          <p>This can be done on the node itself or through the form. I prefer a form for scalelability as there may be many attributes of the node that can be updated. This is the Form component with functionality to edit a node label then make a submission or close the form.</p>
+          <p>It takes two props: <code>selectedGraph</code> and <code>updateGraph</code>. <code>selectedGraph</code> consists of the clicked node and its connections, while the <code>updateGraph</code> function updates the graph with the new node data and sends the updated graph from the child component (Form) to the parent (App).</p>
+          <p>Initialize a state variable <code>form</code> using the useState hook. It's used to manage the visibility and content of the form.</p>
+          <p>The function <code>handleClick</code> is called when a form submission button is clicked. It prevents the default form submission behavior (e.g., page refresh). It then creates a new <code>newGraph</code> object by updating the label of the selected node with the value of the 'form.label' property. For now, it preserves the edges of the selected graph. (In the future, the form can be used to adjust the connections of that node). After that, it calls the updateGraph function</p>
+          <p>The function <code>handleChange</code> is called when the user types into an input field. It updates the form state with the new input value based on the field (e.g., 'label'). If the input is empty, it sets the corresponding field in the form state to an empty string.</p>
+          <p>The function <code>handleCancel</code> is called when the "Cancel" button is clicked. It sets the form.display and selectedGraph.display to false, hiding the form.</p>
+          <p>Note: There is probably a better way of updating elements of the flow diagram through stores, but this is one possible method.</p>
+          <pre>
+            <code class="javascript atom-one-dark"> 
+    import { useState } from 'react'
+
+    function Form({selectedGraph, updateGraph}) {
+    
+      const [form, setForm] = useState({label: selectedGraph.node.data.label, display: selectedGraph.display});
+    
+      const handleClick = (e) => {
+        e.preventDefault()
+        const newGraph = { 
+          node: {
+            ...selectedGraph.node, 
+            data: {...selectedGraph.node.data, label: form.label}
+          },
+          edges: selectedGraph.edges
+        }
+        updateGraph(newGraph)
+
+        setForm({...form, display: false})
+        selectedGraph.display = false
+      }
+    
+      const handleChange = (evt, field) => {
+        setForm({...form, [field]:evt.target.value === '' ? '' : evt.target.value})
+      }
+      
+      const handleCancel = () => {
+        setForm({...form, display: false})
+        selectedGraph.display = false
+      }
+    
+      return (
+        &lt;div className="updatenode__controls" style={{display: form.display}}&gt;
+          &lt;h3&gt;Edit component&lt;/h3&gt;
+          &lt;div className='form-field'&gt;
+            &lt;label&gt;Name:&lt;/label&gt;
+            &lt;input&gt; value={form.label} onChange={(e) => handleChange(e, 'label')} /&gt;
+          &lt;/div&gt;
+          &lt;div className='btn-wrapper'&gt;
+            &lt;div className="btn" onClick={handleCancel}&gt;
+                &lt;div className='btn-label'>Cancel&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div className="btn" onClick={handleClick}&gt;
+              &lt;div className='btn-label'>Save&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      )
+    }
+    
+    export default Form
+            </code>
+          </pre>  
+          <p class="text-bold"></p>
+          <pre>
+            <code>
+
+function App() {
+  // rest of code
+  // ...
+
+  const [selectedGraph, setSelectedGraph] = useState({node: {}, edges: {}, display: false});
+
+  const onNodeClick = (event, node) => {
+    const selectedEdges = edges.filter(e => e.source === node.id || e.target === node.id)
+    setSelectedGraph({node, edges: selectedEdges, display: true})
+  }
+
+  const updateGraph = (updates) => {
+    const selectedNodes = nodes.filter(d => d.id !== selectedGraph.node.id)
+    setNodes([...selectedNodes, updates.node]);
+  }
+
+  &lt;ReactFlowProvider&gt;
+    &lt;div className="reactflow-wrapper" ref={reactFlowWrapper}&gt;
+    &lt;ReactFlow
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onInit={setReactFlowInstance}
+      onDrop={onDrop}
+      onDragOver={onDragOver}  
+      onNodeClick={onNodeClick}   
+    &gt;
+      &lt;Controls /&gt;
+    &lt;/ReactFlow&gt;
+    &lt;Form selectedGraph={selectedGraph} updateGraph={updateGraph} /&gt;
+    &lt;/div&gt;
+    &lt;Sidebar /&gt;
+  &lt;/ReactFlowProvider&gt;
+}
+            </code>
+          </pre>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class='header-container'>
+      <nav class="navbar navbar-expand-lg">
+        <div id="navbarResponsive">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a style='font-family:Poppins;' class="nav-link" href="https://dianaow.com">Back to Projects</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    
+
+      <footer>
+        <div class="flex-container">
+          <div class="left"><h1 class="name">Thanks for visiting!</h1> 
+            <div class="column-content">
+              <p style="font-weight: 400; font-size: 1.2rem;">Diana Ow</p> 
+            </div>
+          </div> 
+          <div class="right">
+            <div class="column">
+              <h5 class="column-header">Connect</h5> 
+              <div class="column-content connect">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/dianaow/">LinkedIn</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://github.com/dianaow/">GitHub</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://contra.com/dianaow_viz">Hire me @ Contra</a>
+              </div>
+            </div> 
+            <div class="column">
+              <h5 class="column-header">Contact</h5> 
+              <div class="column-content contact">
+                <a class="link" target="_blank" rel="noopener noreferrer" href="mailto:diana.ow@outlook.com">Personal</a> 
+                <a class="link" target="_blank" rel="noopener noreferrer" href="https://calendly.com/dianaow/meeting">Meet</a>
+              </div>
+            </div>
+          </div>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Get the URL fragment (e.g., "#targetDiv")
+          console.log(window.location.hash)
+          const fragment = window.location.hash;
+
+          if (fragment) {
+              const targetDiv = document.querySelector(fragment);
+              if (targetDiv) {
+                  targetDiv.scrollIntoView({ behavior: "smooth" });
+              }
+          }
+          hljs.highlightAll()
+      });
+    </script>
+  </body>
+</html>

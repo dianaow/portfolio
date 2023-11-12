@@ -103,6 +103,16 @@ video {
   padding: 15px;
 }
 
+.box-content-inner-code {
+  width: 65%;
+  padding: 15px;
+}
+
+.box-content-inner-code1 {
+  width: 35%;
+  padding: 15px;
+}
+
 .box-landing {
   display: flex;
 }
